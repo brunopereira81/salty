@@ -5,10 +5,11 @@ if [ -f /etc/redhat-release ]; then
 fi
 
 _PKI_DIR=/etc/salt/pki
+_EPEL_RELEASE=http://ftp.linux.ncsu.edu/pub/epel/6/i386/epel-release-6-8.noarch.rpm
 
 clean(){
 
-	rpm -e http://ftp.linux.ncsu.edu/pub/epel/6/i386/epel-release-6-8.noarch.rpm
+	rpm -e $_EPEL_RELEASE
 	yum remove -y salt-master
 	yum remove -y salt-minion
 	rm -rf /etc/salt
@@ -18,21 +19,39 @@ clean(){
 salt_setup(){
     
 	#Install necessary packages
-	rpm -Uvh http://ftp.linux.ncsu.edu/pub/epel/6/i386/epel-release-6-8.noarch.rpm
+	rpm -Uvh $_EPEL_RELEASE
 	yum install -y salt-master
 	yum install -y salt-minion
 
-	#Configure the minion to point to the current hostname
+	#Backup and configure the minion's configuration file
 	/bin/cp /etc/salt/minion /etc/salt/minion.pkged
 	cat <<-EOF > /etc/salt/minion
+	#Generated from bootstrap script
+
 	master: $(hostname)
 	id: $(hostname)
+	EOF
+
+	#Backup and configure the master's configuration file
+	/bin/cp /etc/salt/master /etc/salt/master.pkged
+	cat <<-EOF > /etc/salt/master
+    #Generated from bootstrap script
+
+	file_roots:
+	  base:
+	    - /srv/salt/base
+
+	pillar_roots:
+	  base:
+	    - /srv/salt/pillars
 	EOF
 
 	# Let's create the necessary directories
 	[ -d $_PKI_DIR/minion ] || mkdir -p $_PKI_DIR/minion && chmod 700 $_PKI_DIR/minion || return 1
 	[ -d $_PKI_DIR/master/minions ] || mkdir -p $_PKI_DIR/master/minions && chmod 700 $_PKI_DIR/master/minions || return 1
-
+	[ -d /srv/salt/base ] || mkdir -p /srv/salt/base && chmod 700 /srv/salt/base || return 1
+	[ -d /srv/salt/pillars ] || mkdir -p /srv/salt/pillars && chmod 700 /srv/salt/pillars || return 1
+		
 
 	#Generate keys and preseed master with its key
 	salt-key --gen-keys="$_PKI_DIR"/minion/minion
@@ -40,6 +59,8 @@ salt_setup(){
 	/bin/rm -rf /tmp/$(hostname).p*
 
 }
+
+
 
 salt_services_start(){
 
