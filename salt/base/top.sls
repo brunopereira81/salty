@@ -1,0 +1,3 @@
+base:
+  'borg.queen':
+    - xCat
