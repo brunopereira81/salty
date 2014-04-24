@@ -9,8 +9,8 @@ _PKI_DIR=/etc/salt/pki
 clean(){
 
 	rpm -e http://ftp.linux.ncsu.edu/pub/epel/6/i386/epel-release-6-8.noarch.rpm
-    yum remove -y salt-master
-    yum remove -y salt-minion
+	yum remove -y salt-master
+	yum remove -y salt-minion
 	rm -rf /etc/salt
 
 }
@@ -19,8 +19,8 @@ salt_setup(){
     
 	#Install necessary packages
 	rpm -Uvh http://ftp.linux.ncsu.edu/pub/epel/6/i386/epel-release-6-8.noarch.rpm
-    yum install -y salt-master
-    yum install -y salt-minion
+	yum install -y salt-master
+	yum install -y salt-minion
 
 	#Configure the minion to point to the current hostname
 	/bin/cp /etc/salt/minion /etc/salt/minion.pkged
@@ -29,9 +29,9 @@ salt_setup(){
 	id: $(hostname)
 	EOF
 
-    # Let's create the necessary directories
-    [ -d $_PKI_DIR/minion ] || mkdir -p $_PKI_DIR/minion && chmod 700 $_PKI_DIR/minion || return 1
-    [ -d $_PKI_DIR/master/minions ] || mkdir -p $_PKI_DIR/master/minions && chmod 700 $_PKI_DIR/master/minions || return 1
+	# Let's create the necessary directories
+	[ -d $_PKI_DIR/minion ] || mkdir -p $_PKI_DIR/minion && chmod 700 $_PKI_DIR/minion || return 1
+	[ -d $_PKI_DIR/master/minions ] || mkdir -p $_PKI_DIR/master/minions && chmod 700 $_PKI_DIR/master/minions || return 1
 
 
 	#Generate keys and preseed master with its key
@@ -43,10 +43,10 @@ salt_setup(){
 
 salt_services_start(){
 
-    chkconfig salt-master on
-    service salt-master start
-    chkconfig salt-minion on
-    service salt-minion start
+	chkconfig salt-master on
+	service salt-master start
+	chkconfig salt-minion on
+	service salt-minion start
 }
 
 clean
