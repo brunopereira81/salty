@@ -4,40 +4,51 @@ if [ -f /etc/redhat-release ]; then
   release="redhat"
 fi
 
+_PKI_DIR=/etc/salt/pki
+
 clean(){
-    
+
 	rpm -e http://ftp.linux.ncsu.edu/pub/epel/6/i386/epel-release-6-8.noarch.rpm
-    yum remove salt-master
-    yum remove salt-minion
+    yum remove -y salt-master
+    yum remove -y salt-minion
+	rm -rf /etc/salt
+
 }
 
 salt_setup(){
     
+	#Install necessary packages
 	rpm -Uvh http://ftp.linux.ncsu.edu/pub/epel/6/i386/epel-release-6-8.noarch.rpm
-    yum reinstall -y salt-master
-    yum reinstall -y salt-minion
+    yum install -y salt-master
+    yum install -y salt-minion
 
+	#Configure the minion to point to the current hostname
+	/bin/cp /etc/salt/minion /etc/salt/minion.pkged
 	cat <<-EOF > /etc/salt/minion
 	master: $(hostname)
 	id: $(hostname)
 	EOF
 
-	salt-key --gen-keys=/tmp/$(hostname)
+    # Let's create the necessary directories
+    [ -d $_PKI_DIR/minion ] || mkdir -p $_PKI_DIR/minion && chmod 700 $_PKI_DIR/minion || return 1
+    [ -d $_PKI_DIR/master/minions ] || mkdir -p $_PKI_DIR/master/minions && chmod 700 $_PKI_DIR/master/minions || return 1
 
-	rm -rf /etc/salt/pki/minion/*
 
-	cp /tmp/$(hostname).pub /etc/salt/pki/master/minions/$(hostname)
+	#Generate keys and preseed master with its key
+	salt-key --gen-keys="$_PKI_DIR"/minion/minion
+	/bin/cp "$_PKI_DIR"/minion/minion.pub $_PKI_DIR/master/minions/$(hostname)
+	/bin/rm -rf /tmp/$(hostname).p*
 
-	cp /tmp/$(hostname).pub /etc/salt/pki/minion/minion.pub
-    cp /tmp/$(hostname).pem /etc/salt/pki/minion/minion.pem
-
-	rm -rf /tmp/$(hostname).*
-
-	chkconfig salt-master on
-	service salt-master restart
-
-    chkconfig salt-minion on
-    service salt-minion restart
 }
 
+salt_services_start(){
+
+    chkconfig salt-master on
+    service salt-master start
+    chkconfig salt-minion on
+    service salt-minion start
+}
+
+clean
 salt_setup
+salt_services_start
