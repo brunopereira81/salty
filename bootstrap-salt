@@ -25,26 +25,28 @@ salt_setup(){
 
   #Backup and configure the minion's configuration file
   /bin/cp /etc/salt/minion /etc/salt/minion.pkged
-  cat <<-EOF > /etc/salt/minion
-  #Generated from bootstrap script
 
-  master: $(hostname)
-  id: $(hostname)
-  EOF
+	cat <<-EOF > /etc/salt/minion
+	#Generated from bootstrap script
+
+	master: $(hostname)
+	id: $(hostname)
+	EOF
 
   #Backup and configure the master's configuration file
   /bin/cp /etc/salt/master /etc/salt/master.pkged
-  cat <<-EOF > /etc/salt/master
-  #Generated from bootstrap script
 
-  file_roots:
-    base:
-      - /srv/salt/base
+	cat <<-EOF > /etc/salt/master
+	#Generated from bootstrap script
 
-  pillar_roots:
-    base:
-      - /srv/salt/pillars
-  EOF
+	file_roots:
+	  base:
+	    - /srv/salt/base
+
+	pillar_roots:
+	  base:
+	    - /srv/salt/pillars
+	EOF
 
   # Let's create the necessary directories
   [ -d $_PKI_DIR/minion ] || mkdir -p $_PKI_DIR/minion && chmod 700 $_PKI_DIR/minion || return 1
