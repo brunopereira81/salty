@@ -1,4 +1,5 @@
 base:
   'borg.queen':
-    - xCat
     - network
+    - ntp
+    - xCat

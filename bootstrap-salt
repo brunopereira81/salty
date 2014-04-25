@@ -39,6 +39,13 @@ salt_setup(){
 	cat <<-EOF > /etc/salt/master
 	#Generated from bootstrap script
 
+	schedule:
+	  highstate:
+	    function: state.highstate
+	    seconds: 0
+	    minutes: 10
+	    hours: 0 
+
 	file_roots:
 	  base:
 	    - /srv/salt/base

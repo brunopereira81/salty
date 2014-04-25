@@ -22,3 +22,21 @@ xCAT:
     - mode: 644
     - source: http://sourceforge.net/projects/xcat/files/yum/xcat-dep/rh6/x86_64/xCAT-dep.repo
     - source_hash: md5=45edbc8c0248d1f67ab1b8ea9707436b
+
+
+
+/opt/xcat/bin/chdef -t site master="10.141.255.254":
+  cmd.run
+
+/opt/xcat/bin/chdef -t site domain="cluster":
+  cmd.run
+
+/opt/xcat/bin/chdef -t site timezone="Europe/Amsterdam":
+  cmd.run
+
+/opt/xcat/bin/chdef -t site nameservers="<xcatmaster>":
+  cmd.run
+
+/opt/xcat/bin/chdef -t site forwarders="8.8.4.4":
+  cmd.run
+
