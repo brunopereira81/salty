@@ -66,14 +66,14 @@ salt_setup(){
 
   #And copy our awesome configuration files
   #!!!! hackyyyy1: copy the files somewhere else so that our wip is not lost !!!!
-  cp -r ./salty /srv/tmp
+  cp -r ./salt /srv/tmp
 
   #Generate keys and preseed master with its key
   salt-key --gen-keys="$_PKI_DIR"/minion/minion
   /bin/cp "$_PKI_DIR"/minion/minion.pub $_PKI_DIR/master/minions/$(hostname)
   /bin/rm -rf /tmp/$(hostname).p*
 
-} 1> /dev/null
+} &> /dev/null
 
 salt_services_start(){
 
