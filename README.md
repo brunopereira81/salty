@@ -7,8 +7,8 @@ Installs and sets up salt and the xCat grain in to the master:
 
 - Clone the salty repository:
 
-  > git clone
+  > git clone https://github.com/brunopereira81/salty.git
 
 - Deploy salt and prepare the environment:
 
-  > cd salty && sh ./salty
+  > cd salty && sh ./bootstrap-salt
