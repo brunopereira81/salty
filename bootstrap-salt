@@ -13,7 +13,6 @@ clean(){
   rpm -e $_EPEL_RELEASE
   yum remove -y salt-master
   yum remove -y salt-minion
-  yum remove -y GitPython
   rm -rf /etc/salt
 
 } &> /dev/null
@@ -24,7 +23,8 @@ salt_setup(){
   rpm -Uvh $_EPEL_RELEASE
   yum install -y salt-master
   yum install -y salt-minion
-  yum install -y GitPython
+  yum install -y pysnmp
+  yum install -y python-pyasn1
 
   #Backup and configure the minion's configuration file
   /bin/cp /etc/salt/minion /etc/salt/minion.pkged

@@ -35,3 +35,6 @@ xCAT:
   cmd.run
 /opt/xcat/bin/chdef -t site forwarders="{{ salt['pillar.get']('xcat.master:forwarders')}}":
   cmd.run
+/opt/xcat/sbin/tabch switch={{ salt['pillar.get']('xcat.switches:switch.config:designation')}} switches.snmpversion={{ salt['pillar.get']('xcat.switches:switch.config:snmp.version')}} switches.password={{ salt['pillar.get']('xcat.switches:switch.config:password')}} switches.protocol={{ salt['pillar.get']('xcat.switches:switch.config:protocol')}}:
+  cmd.run
+
