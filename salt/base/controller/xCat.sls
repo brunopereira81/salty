@@ -25,18 +25,13 @@ xCAT:
 
 
 
-/opt/xcat/bin/chdef -t site master="10.141.255.254":
+/opt/xcat/bin/chdef -t site master="{{ salt['pillar.get']('xcat.master:master.ip')}}":
   cmd.run
-
-/opt/xcat/bin/chdef -t site domain="cluster":
+/opt/xcat/bin/chdef -t site domain="{{ salt['pillar.get']('xcat.master:domain')}}":
   cmd.run
-
-/opt/xcat/bin/chdef -t site timezone="Europe/Amsterdam":
+/opt/xcat/bin/chdef -t site timezone="{{ salt['pillar.get']('xcat.master:timezone')}}":
   cmd.run
-
-/opt/xcat/bin/chdef -t site nameservers="<xcatmaster>":
+/opt/xcat/bin/chdef -t site nameservers="{{ salt['pillar.get']('xcat.master:nameservers')}}":
   cmd.run
-
-/opt/xcat/bin/chdef -t site forwarders="8.8.4.4":
+/opt/xcat/bin/chdef -t site forwarders="{{ salt['pillar.get']('xcat.master:forwarders')}}":
   cmd.run
-

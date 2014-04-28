@@ -1,5 +1,5 @@
 base:
-  'borg.queen':
-    - network
-    - ntp
-    - xCat
+  {{pillar['master.controller']}}:
+    - controller.network
+    - controller.ntp
+    - controller.xCat

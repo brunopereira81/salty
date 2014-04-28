@@ -10,7 +10,7 @@ network:
     - user: root
     - group: root
     - mode: 644
-    - source: salt://ifcfg-eth0
+    - source: salt://controller/files/ifcfg-eth0
 
 
 /etc/sysconfig/network-scripts/ifcfg-eth1:
@@ -18,4 +18,4 @@ network:
     - user: root
     - group: root
     - mode: 644
-    - source: salt://ifcfg-eth1
+    - source: salt://controller/files/ifcfg-eth1

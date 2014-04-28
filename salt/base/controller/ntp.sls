@@ -15,4 +15,4 @@ ntpd:
     - user: root
     - group: root
     - mode: 644
-    - source: salt://ntp.conf
+    - source: salt://controller/files/ntp.conf
