@@ -8,3 +8,5 @@ xcat.master:
   timezone: Europe/Amsterdam
   nameservers: <xcatmaster>
   forwarders: 8.8.8.8, 8.8.4.4
+xcat.switches:
+  switch01: 10.0.0.5
