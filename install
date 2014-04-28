@@ -1,0 +1,7 @@
+#!/bin/bash
+
+yum install -y git &> /dev/null
+
+git clone https://github.com/brunopereira81/salty.git ./tmp
+
+./tmp/bootstrap-salt

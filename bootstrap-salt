@@ -6,15 +6,17 @@ fi
 
 _PKI_DIR=/etc/salt/pki
 _EPEL_RELEASE=http://ftp.linux.ncsu.edu/pub/epel/6/i386/epel-release-6-8.noarch.rpm
+_CURRENT_DIR=$(pwd)
 
 clean(){
 
   rpm -e $_EPEL_RELEASE
   yum remove -y salt-master
   yum remove -y salt-minion
+  yum remove -y GitPython
   rm -rf /etc/salt
 
-}
+} &> /dev/null
 
 salt_setup(){
     
@@ -22,6 +24,7 @@ salt_setup(){
   rpm -Uvh $_EPEL_RELEASE
   yum install -y salt-master
   yum install -y salt-minion
+  yum install -y GitPython
 
   #Backup and configure the minion's configuration file
   /bin/cp /etc/salt/minion /etc/salt/minion.pkged
@@ -61,14 +64,16 @@ salt_setup(){
   [ -d /srv/salt/base ] || mkdir -p /srv/salt/base && chmod 700 /srv/salt/base || return 1
   [ -d /srv/salt/pillars ] || mkdir -p /srv/salt/pillars && chmod 700 /srv/salt/pillars || return 1
 
+  #And copy our awesome configuration files
+  #!!!! hackyyyy1: copy the files somewhere else so that our wip is not lost !!!!
+  cp -r ./salty /srv/tmp
+
   #Generate keys and preseed master with its key
   salt-key --gen-keys="$_PKI_DIR"/minion/minion
   /bin/cp "$_PKI_DIR"/minion/minion.pub $_PKI_DIR/master/minions/$(hostname)
   /bin/rm -rf /tmp/$(hostname).p*
 
-}
-
-
+} 1> /dev/null
 
 salt_services_start(){
 
@@ -79,6 +84,17 @@ salt_services_start(){
 
 }
 
+
+echo "Using current directory $_CURRENT_DIR"
+
+echo -e "\nCleaning up previous installation"
 clean
+
+echo -e "Installing and configuring salt"
 salt_setup
+
+echo -e "Starting salt services...\n"
 salt_services_start
+echo -e "\nDone!"
+
+
