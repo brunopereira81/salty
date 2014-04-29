@@ -86,9 +86,9 @@ salt_services_start(){
 }
 
 
-echo -e "Using current directory $_CURRENT_DIR\n"
-echo -e "Salt master will be $(hostname)\n"
-echo -e "State and pillar files for salt are located in $_SALT_ROOTFILES/salt\n"
+echo "Using current directory $_CURRENT_DIR"
+echo -e "Salt master will be $(hostname)"
+echo -e "State and pillar files for salt are located in $_SALT_ROOTFILES/salt"
 
 echo -e "\nCleaning up previous installation"
 clean
@@ -96,12 +96,13 @@ clean
 echo -e "Installing and configuring salt"
 salt_setup
 
-echo -e "Adapting system"
-awk -v hostname=$(hostname) '/^master.controller:/{$0="master.controller: " hostname}1' $_SALT_ROOTFILES/salt/pillars/_env.sls
+echo -e "Adapting system to our configuration"
+awk -v hostname=$(hostname) '/^master.controller:/{$0="master.controller: " hostname}1' ./salt/pillars/_env.sls > $_SALT_ROOTFILES/salt/pillars/_env.sls
 
 echo -e "Starting salt services...\n"
 salt_services_start
 
+echo -e "\nRunnig first instance of highstate... (might take a while)"
+salt '*' state.highstate &> /dev/null
+
 echo -e "\nDone!"
-
-
