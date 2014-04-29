@@ -5,8 +5,10 @@ if [ -f /etc/redhat-release ]; then
 fi
 
 _PKI_DIR=/etc/salt/pki
-_EPEL_RELEASE=http://ftp.linux.ncsu.edu/pub/epel/6/i386/epel-release-6-8.noarch.rpm
+_SALT_ROOTFILES=/srv
 _CURRENT_DIR=$(pwd)
+_EPEL_RELEASE=http://ftp.linux.ncsu.edu/pub/epel/6/i386/epel-release-6-8.noarch.rpm
+
 
 clean(){
 
@@ -65,9 +67,8 @@ salt_setup(){
   [ -d /srv/salt/pillars ] || mkdir -p /srv/salt/pillars && chmod 700 /srv/salt/pillars || return 1
 
   #And copy our awesome configuration files
-  #!!!! hackyyyy1: copy the files somewhere else so that our wip is not lost !!!!
-  cp -r ./salt /srv/tmp
-
+  cp -r ./salt $_SALT_ROOTFILES
+  
   #Generate keys and preseed master with its key
   salt-key --gen-keys="$_PKI_DIR"/minion/minion
   /bin/cp "$_PKI_DIR"/minion/minion.pub $_PKI_DIR/master/minions/$(hostname)
@@ -85,7 +86,9 @@ salt_services_start(){
 }
 
 
-echo "Using current directory $_CURRENT_DIR"
+echo -e "Using current directory $_CURRENT_DIR\n"
+echo -e "Salt master will be $(hostname)\n"
+echo -e "State and pillar files for salt are located in $_SALT_ROOTFILES/salt\n"
 
 echo -e "\nCleaning up previous installation"
 clean
@@ -93,8 +96,12 @@ clean
 echo -e "Installing and configuring salt"
 salt_setup
 
+echo -e "Adapting system"
+awk -v hostname=$(hostname) '/^master.controller:/{$0="master.controller: " hostname}1' $_SALT_ROOTFILES/salt/pillars/_env.sls
+
 echo -e "Starting salt services...\n"
 salt_services_start
+
 echo -e "\nDone!"
 
 

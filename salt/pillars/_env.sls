@@ -1,6 +1,6 @@
 #hostnames, what does what function
-master.controller: borg.queen
-nfs.storage: storage01
+master.controller:
+nfs.storage:
 #xCat configuration
 xcat.master:
   master.ip: 10.141.255.254
