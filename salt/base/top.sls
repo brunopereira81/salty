@@ -3,4 +3,4 @@ base:
     - controller.network
     - controller.ntp
     - controller.xCat
-    - storage.nfs
+    - controller.config

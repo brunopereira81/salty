@@ -1,0 +1,4 @@
+## Managed by salt : do not edit by hand ##
+NETWORKING=yes
+HOSTNAME=
+## END
