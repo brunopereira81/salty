@@ -4,7 +4,6 @@ xCAT:
       - file: /etc/yum.repos.d/xCat-Core.repo
       - file: /etc/yum.repos.d/xCat-dep.repo
 
-
 /etc/yum.repos.d/xCat-Core.repo:
   file.managed:
     - seconds: 600
@@ -23,6 +22,29 @@ xCAT:
     - source: http://sourceforge.net/projects/xcat/files/yum/xcat-dep/rh6/x86_64/xCAT-dep.repo
     - source_hash: md5=45edbc8c0248d1f67ab1b8ea9707436b
 
-/opt/xcat/sbin/restorexCATdb -p /srv/salt/base/controller/files/tables:
+xcatd:
+  service:
+    - running
+    - enable: True
+
+/opt/xcat/sbin/nodeadd node001-node004 groups=compute &> /dev/null:
+  cmd.run
+/opt/xcat/sbin/makehosts:
+  cmd.run
+/opt/xcat/sbin/makedhcp -n:
+  cmd.run
+/opt/xcat/sbin/makedhcp -a:
   cmd.run
 
+dhcp:
+  pkg.installed
+
+dhcpd:
+  service:
+    - running
+    - enable: True
+    - reload: True
+    - watch:
+      - file: /etc/dhcp/dhcpd.conf
+  file.exists:
+    - name: /etc/dhcp/dhcpd.conf

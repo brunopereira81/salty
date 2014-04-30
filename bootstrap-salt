@@ -13,8 +13,8 @@ _CONTROLLER_NAME=""
 clean(){
 
   rpm -e $_EPEL_RELEASE
-  yum remove -y salt-master
-  yum remove -y salt-minion
+  yum --enablerepo=epel-testing remove -y salt-master
+  yum --enablerepo=epel-testing remove -y salt-minion
   rm -rf /etc/salt
 
 } &> /dev/null
@@ -23,8 +23,8 @@ salt_setup(){
     
   #Install necessary packages
   rpm -Uvh $_EPEL_RELEASE
-  yum install -y salt-master
-  yum install -y salt-minion
+  yum --enablerepo=epel-testing install -y salt-master
+  yum --enablerepo=epel-testing install -y salt-minion
   yum install -y pysnmp
   yum install -y python-pyasn1
 
@@ -117,8 +117,11 @@ echo "HOSTNAME=$_CONTROLLER_NAME" > /etc/sysconfig/network
 echo -e "Starting salt services...\n"
 salt_services_start
 
-echo -e "\nRunnig first instance of stalt state... (might take a while)"
+echo -e "\nRunning first instance of stalt state... (might take a while)"
 sleep 5
-salt '*' state.highstate 
+salt '*' state.highstate &> /dev/null
+
+sleep 2
+echo -e "\nRestoring xCat tables: $(/opt/xcat/sbin/restorexCATdb -p /srv/salt/base/controller/files/tables)"
 
 echo -e "\nDone!"

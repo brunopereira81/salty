@@ -12,7 +12,12 @@ ntpd:
 
 /etc/ntp.conf:
   file.managed:
-    - user: root
-    - group: root
-    - mode: 644
-    - source: salt://controller/files/ntp.conf
+    - contents: |
+        ## Managed by salt : do not edit by hand ##
+        server 127.127.1.0
+        fudge 127.127.1.0 stratum 10
+        server 0.europe.pool.ntp.org iburst
+        server 1.europe.pool.ntp.org iburst
+        server 2.europe.pool.ntp.org iburst
+        server 3.europe.pool.ntp.org iburst
+        driftfile /var/lib/ntp/drift

@@ -1,17 +1,14 @@
 /etc/sysconfig/network:
   file.managed:
-    - source:
-      - salt://controller/files/network
-
-etc/sysconfig/network:
-  file.blockreplace:
-    - name: /etc/sysconfig/network
-    - marker_start: "## Managed by salt : do not edit by hand ##"
-    - BOTTOM: "## END"
-    - content: |
+    - contents: |
+        ## Managed by salt : do not edit by hand ##
         NETWORKING=yes
         HOSTNAME={{pillar['master.controller']}}
+        ## Any changes to this file will be overwritten ##
 
 /etc/hosts:
   file.managed:
-    - source: salt://controller/files/hosts
+    - contents: |
+        ## Managed by salt : do not edit by hand ##
+        127.0.0.1 localhost localhost.localdomain {{pillar['master.controller']}}
+        ## Any changes to this file will be overwritten ##
