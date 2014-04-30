@@ -23,18 +23,6 @@ xCAT:
     - source: http://sourceforge.net/projects/xcat/files/yum/xcat-dep/rh6/x86_64/xCAT-dep.repo
     - source_hash: md5=45edbc8c0248d1f67ab1b8ea9707436b
 
-
-
-/opt/xcat/bin/chdef -t site master="{{ salt['pillar.get']('xcat.master:master.ip')}}":
-  cmd.run
-/opt/xcat/bin/chdef -t site domain="{{ salt['pillar.get']('xcat.master:domain')}}":
-  cmd.run
-/opt/xcat/bin/chdef -t site timezone="{{ salt['pillar.get']('xcat.master:timezone')}}":
-  cmd.run
-/opt/xcat/bin/chdef -t site nameservers="{{ salt['pillar.get']('xcat.master:nameservers')}}":
-  cmd.run
-/opt/xcat/bin/chdef -t site forwarders="{{ salt['pillar.get']('xcat.master:forwarders')}}":
-  cmd.run
-/opt/xcat/sbin/tabch switch={{ salt['pillar.get']('xcat.switches:switch.config:designation')}} switches.snmpversion={{ salt['pillar.get']('xcat.switches:switch.config:snmp.version')}} switches.password={{ salt['pillar.get']('xcat.switches:switch.config:password')}} switches.protocol={{ salt['pillar.get']('xcat.switches:switch.config:protocol')}}:
+/opt/xcat/sbin/restorexCATdb -p /srv/salt/base/controller/files/tables:
   cmd.run
 
