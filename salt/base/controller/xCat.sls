@@ -19,11 +19,8 @@
 xCAT:
   pkg.installed:
     - required_in:
-      - prereq:
-        - cmd.run: yum makecache
       - file: /etc/yum.repos.d/xCat-Core.repo
       - file: /etc/yum.repos.d/xCat-dep.repo
-
 
 xcatd:
   service:
