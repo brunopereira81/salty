@@ -46,6 +46,12 @@ salt_setup(){
 	#Generated from bootstrap script
 	master: $_CONTROLLER_NAME
 	id: $_CONTROLLER_NAME
+        schedule:
+          highstate:
+            function: state.highstate
+            seconds: 0
+            minutes: 10
+            hours: 0 
 	EOF
 
   #Backup and configure the master's configuration file
@@ -53,13 +59,6 @@ salt_setup(){
 
 	cat <<-EOF > /etc/salt/master
 	#Generated from bootstrap script
-	schedule:
-	  highstate:
-	    function: state.highstate
-	    seconds: 0
-	    minutes: 10
-	    hours: 0 
-
 	file_roots:
 	  base:
 	    - /srv/salt/base
