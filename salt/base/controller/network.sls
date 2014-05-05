@@ -1,21 +1,19 @@
 network:
-  service.running:
-    - watch:
-      - file: /etc/sysconfig/network-scripts/ifcfg-eth0
-      - file: /etc/sysconfig/network-scripts/ifcfg-eth1
-
+  service.running
 
 /etc/sysconfig/network-scripts/ifcfg-eth0:
   file.managed:
-    - user: root
-    - group: root
-    - mode: 644
-    - source: salt://controller/files/ifcfg-eth0
-
+    - contents: |
+        DEVICE=eth0
+        ONBOOT=yes
+        BOOTPROTO=static
+        IPADDR=10.141.255.254
+        PREFIX=16
 
 /etc/sysconfig/network-scripts/ifcfg-eth1:
   file.managed:
-    - user: root
-    - group: root
-    - mode: 644
-    - source: salt://controller/files/ifcfg-eth1
+    - contents: |
+        DEVICE=eth1
+        ONBOOT=yes
+        BOOTPROTO=dhcp
+        PEERDNS=no

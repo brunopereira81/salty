@@ -27,24 +27,19 @@ xcatd:
     - running
     - enable: True
 
-/opt/xcat/sbin/nodeadd node001-node004 groups=compute &> /dev/null:
+/opt/xcat/sbin/chtab netname=10_141_0_0-255_255_0_0 networks.dynamicrange=10.141.230.1-10.141.239.254:
   cmd.run
+
+/opt/xcat/sbin/nodeadd node001-node004 groups=compute:
+  cmd.run:
+    - requires:
+      - service: xcatd
+
 /opt/xcat/sbin/makehosts:
   cmd.run
 /opt/xcat/sbin/makedhcp -n:
   cmd.run
 /opt/xcat/sbin/makedhcp -a:
   cmd.run
-
-dhcp:
-  pkg.installed
-
-dhcpd:
-  service:
-    - running
-    - enable: True
-    - reload: True
-    - watch:
-      - file: /etc/dhcp/dhcpd.conf
-  file.exists:
-    - name: /etc/dhcp/dhcpd.conf
+/opt/xcat/sbin/makedns -n:
+  cmd.run

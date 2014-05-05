@@ -1,3 +1,4 @@
+domain.name: cluster
 #hostnames, what does what function
 master.controller:
 nfs.storage:
