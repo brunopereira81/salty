@@ -1,9 +1,3 @@
-xCAT:
-  pkg.installed:
-    - required_in:
-      - file: /etc/yum.repos.d/xCat-Core.repo
-      - file: /etc/yum.repos.d/xCat-dep.repo
-
 /etc/yum.repos.d/xCat-Core.repo:
   file.managed:
     - seconds: 600
@@ -21,6 +15,15 @@ xCAT:
     - mode: 644
     - source: http://sourceforge.net/projects/xcat/files/yum/xcat-dep/rh6/x86_64/xCAT-dep.repo
     - source_hash: md5=45edbc8c0248d1f67ab1b8ea9707436b
+
+xCAT:
+  pkg.installed:
+    - required_in:
+      - prereq:
+        - cmd.run: yum makecache
+      - file: /etc/yum.repos.d/xCat-Core.repo
+      - file: /etc/yum.repos.d/xCat-dep.repo
+
 
 xcatd:
   service:
