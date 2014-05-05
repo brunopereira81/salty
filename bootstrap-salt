@@ -26,8 +26,25 @@ clean(){
 } &> /dev/null
 
 xcat_pre(){
-  curl -o /etc/yum.repos.d/xCAT-core.repo  http://sourceforge.net/projects/xcat/files/yum/2.8/xcat-core/xCAT-core.repo
-  curl -o /etc/yum/repos.d/xCAT-dep.repo http://sourceforge.net/projects/xcat/files/yum/xcat-dep/rh6/x86_64/xCAT-dep.repo
+
+  #Create repository files
+	cat <<-EOF > /etc/yum.repos.d/xCAT-core.repo
+        [xcat-2-core]
+        name=xCAT 2 Core packages
+        baseurl=https://sourceforge.net/projects/xcat/files/yum/2.8/xcat-core
+        enabled=1
+        gpgcheck=1
+        gpgkey=https://sourceforge.net/projects/xcat/files/yum/2.8/xcat-core/repodata/repomd.xml.key
+	EOF
+
+	cat <<-EOF > /etc/yum/repos.d/xCAT-dep.repo
+        [xcat-dep]
+        name=xCAT 2 depedencies
+        baseurl=https://sourceforge.net/projects/xcat/files/yum/xcat-dep/rh6/x86_64
+        enabled=1
+        gpgcheck=1
+        gpgkey=https://sourceforge.net/projects/xcat/files/yum/xcat-dep/rh6/x86_64/repodata/repomd.xml.key
+	EOF
   yum update -y
   yum install -y xCAT
 
