@@ -27,6 +27,7 @@ clean(){
 } &> /dev/null
 
 xcat_pre(){
+  yum install -y wget
   wget -P /etc/yum.repos.d/ http://sourceforge.net/projects/xcat/files/yum/2.8/xcat-core/xCAT-core.repo
   wget -P /etc/yum/repos.d/ http://sourceforge.net/projects/xcat/files/yum/xcat-dep/rh6/x86_64/xCAT-dep.repo
   yum update -y
