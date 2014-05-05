@@ -12,10 +12,10 @@ _CONTROLLER_NAME=""
 
 
 
-echo -e "\n /\\___/\\"
-echo " \\ -.- /"
-echo " \`-.^.-'                                    **xCAT** "   
-echo -e "   /\"\      “Cats are intended to teach us that not everything in nature has a purpose.” \n"
+echo -e "\n/\\___/\\"
+echo "\\ -.- /"
+echo "\`-.^.-'                                    **xCAT** "   
+echo -e "  /\"\  “Cats are intended to teach us that not everything in nature has a purpose.” \n"
 
 clean(){
 
@@ -23,10 +23,6 @@ clean(){
   yum --enablerepo=epel-testing remove -y salt-master
   yum --enablerepo=epel-testing remove -y salt-minion
   rm -rf /etc/salt
-  #rm -rf /etc/xcat
-  #rm -rf /opt/xcat
-  #rm -rf /tftpboot
-  #rm -rf /install
 
 } &> /dev/null
 
@@ -46,12 +42,10 @@ salt_setup(){
 	#Generated from bootstrap script
 	master: $_CONTROLLER_NAME
 	id: $_CONTROLLER_NAME
-        schedule:
+	schedule:
           highstate:
-            function: state.highstate
-            seconds: 0
-            minutes: 10
-            hours: 0 
+          function: state.highstate
+          minutes: 5
 	EOF
 
   #Backup and configure the master's configuration file
@@ -81,15 +75,6 @@ salt_setup(){
   salt-key --gen-keys="$_PKI_DIR"/minion/minion
   /bin/cp "$_PKI_DIR"/minion/minion.pub $_PKI_DIR/master/minions/$_CONTROLLER_NAME
   /bin/rm -rf /tmp/$_CONTROLLER_NAME.p*
-
-} &> /dev/null
-
-xcat_setup(){
-
-  yum install -y xCAT
-  yum reinstall -y xCAT $(repoquery --requires --resolve xCAT)
-  /opt/xcat/sbin/xcatconfig -f
-
 
 } &> /dev/null
 
@@ -136,12 +121,10 @@ echo "HOSTNAME=$_CONTROLLER_NAME" > /etc/sysconfig/network
 echo -e "Starting salt services...\n"
 salt_services_start
 
-#echo -e "\nForcing xCAT to work... (we hate it, but need to do this)"
-#xcat_setup
-
-echo -e "\nRestoring xCat tables: $(/opt/xcat/sbin/restorexCATdb -p /srv/salt/base/controller/files/tables)"
 
 echo -e "\nRunning first instance of high state... (might take a while)"
 salt '*' state.highstate
+
+echo -e "\nRestoring xCat tables: $(/opt/xcat/sbin/restorexCATdb -p /srv/salt/base/controller/files/tables)"
 
 echo -e "\nDone!"
