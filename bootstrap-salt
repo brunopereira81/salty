@@ -10,12 +10,11 @@ _CURRENT_DIR=$(pwd)
 _EPEL_RELEASE=http://ftp.linux.ncsu.edu/pub/epel/6/i386/epel-release-6-8.noarch.rpm
 _CONTROLLER_NAME=""
 
-
-
-echo -e "\n/\\___/\\"
-echo "\\ -.- /"
-echo "\`-.^.-'                                    **xCAT** "   
-echo -e "  /\"\  “Cats are intended to teach us that not everything in nature has a purpose.” \n"
+echo -e "\n          /\\___/\\"
+echo "          \\ -.- /"
+echo "          \`-.^.-'            **xCAT** "   
+echo -e "            /\"\  "
+echo -e "“Cats are intended to teach us that not everything in nature has a purpose.” \n"
 
 clean(){
 
@@ -116,7 +115,11 @@ done
 
 echo -e "\nCleaning up previous installation"
 clean
+
+echo -e "\nPreparing xCat and installing necessary packages"
 xcat_pre
+
+echo -e "\nRestoring xCat tables: $(/opt/xcat/sbin/restorexCATdb -p /srv/salt/base/controller/files/tables)"
 
 echo -e "Installing and configuring salt"
 salt_setup
@@ -134,7 +137,5 @@ salt_services_start
 
 echo -e "\nRunning first instance of high state... (might take a while)"
 salt '*' state.highstate
-
-echo -e "\nRestoring xCat tables: $(/opt/xcat/sbin/restorexCATdb -p /srv/salt/base/controller/files/tables)"
 
 echo -e "\nDone!"
