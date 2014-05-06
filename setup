@@ -21,7 +21,6 @@ tools_setup(){
 
 xcat_remove(){
 
-
   rm -rf /install
   rm -rf /root/.xcat
   rm -rf /tftpboot
@@ -48,7 +47,7 @@ xcat_remove(){
 
 }
 
-xcat_setup(){
+xcat_install(){
 
   #Add the xCAT repo to our repositories:
 	cat <<- EOF > /etc/yum.repos.d/xCAT-Core.repo
@@ -68,10 +67,8 @@ xcat_setup(){
 	gpgcheck=1
 	gpgkey=https://sourceforge.net/projects/xcat/files/yum/xcat-dep/rh6/x86_64/repodata/repomd.xml.key
 	EOF
-  #/End of repos
-
-  #Install xCAT
-  yum install xCAT
+  
+yum install xCAT
 
 }
 
@@ -79,6 +76,6 @@ if [ -n "$(rpm -qa | grep xCAT)" ]; then
   xcat_remove
 fi
 
-xcat_setup
+xcat_install
 
 
