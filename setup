@@ -1,8 +1,5 @@
 #!/bin/bash
 
-
-#color: "Black" "Blue" "Green" "Cyan" "Red" "Magenta" "Yellow" "White"
-
 _PKI_DIR=/etc/salt/pki
 _SALT_ROOTFILES=/srv
 _CURRENT_DIR=$(pwd)
@@ -64,11 +61,11 @@ xcat_cleanup(){
 
   for i in $(rpm -qa); do
     if [ "$(repoquery -i $i | grep Repository | awk '{print $3}')" == "xcat-2-core" ]; then
-      echo -e "\n$(tput setf 5)[Removing]$(tput sgr0) $i\c"
+      echo -e "\n\e[94m[Removing]\e[0m $i\c"
       rpm -e --nodeps "$(repoquery -i $i | grep Name | awk '{print $3}')" &> /dev/null
     fi
     if [ "$(repoquery -i $i | grep Repository | awk '{print $3}')" == "xcat-dep" ]; then
-      echo -e "\n$(tput setf 5)[Removing]$(tput sgr0) $i\c"
+      echo -e "\n\e[94m[Removing]\e[0m $i\c"
       rpm -e --nodeps "$(repoquery -i $i | grep Name | awk '{print $3}')" &> /dev/null
     fi
   done
@@ -97,17 +94,18 @@ xcat_remove(){
   echo -e "Installing necessary packages and recreating files:\n"
   for i in $(rpm -qa); do
     if [ "$(repoquery -i $i | grep Repository | awk '{print $3}')" == "xcat-2-core" ]; then
-      echo -e "$(tput setf 2)[Installing]$(tput sgr0) $i\c"
+      echo -e "\e[32m[Installing]\e[0m $i\c"
       yum reinstall -y "$(repoquery -i $i | grep Name | awk '{print $3}')" &> /dev/null
     fi
     if [ "$(repoquery -i $i | grep Repository | awk '{print $3}')" == "xcat-dep" ]; then
-      echo -e "$(tput setf 2)[Installing]$(tput sgr0) $i\c"
+      echo -e "\e[32m[Installing]\e[0m $i\c"
       yum reinstall -y "$(repoquery -i $i | grep Name | awk '{print $3}')" &> /dev/null
     fi
   done
 
 }
 
+tput clear
 if [ "$1" == "clean" ]; then
 xcat_cleanup
 else
