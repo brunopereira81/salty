@@ -152,6 +152,7 @@ xcat_reset(){
 }
 
 if [ "$1" == "clean" ]; then
+requirement_setup
 xcat_cleanup
 else
   requirement_setup
