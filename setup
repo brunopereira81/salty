@@ -19,7 +19,7 @@ requirement_setup(){
   yum install -y yum-utils
   yum install -y ncurses 
 
-}
+} &> /dev/null
 
 xcat_repo_add(){
 
@@ -71,8 +71,8 @@ xcat_cleanup(){
     fi
   done
   
-  yum clean all
-  yum install -y xCAT
+  yum clean all &> /dev/null
+  yum install -y xCAT &> /dev/null
 
 }
 
@@ -95,11 +95,11 @@ xcat_remove(){
   echo -e "Installing necessary packages and recreating files:\n"
   for i in $(rpm -qa); do
     if [ "$(repoquery -i $i | grep Repository | awk '{print $3}')" == "xcat-2-core" ]; then
-      echo -e "\e[32m[Installing]\e[0m $i\c"
+      echo -e "\n\e[32m[Installing]\e[0m $i\c"
       yum reinstall -y "$(repoquery -i $i | grep Name | awk '{print $3}')" &> /dev/null
     fi
     if [ "$(repoquery -i $i | grep Repository | awk '{print $3}')" == "xcat-dep" ]; then
-      echo -e "\e[32m[Installing]\e[0m $i\c"
+      echo -e "\n\e[32m[Installing]\e[0m $i\c"
       yum reinstall -y "$(repoquery -i $i | grep Name | awk '{print $3}')" &> /dev/null
     fi
   done
