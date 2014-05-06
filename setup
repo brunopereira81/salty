@@ -18,7 +18,7 @@ echo -e "“Cats are intended to teach us that not everything in nature has a pu
 requirement_setup(){
 
   yum install -y yum-utils
-  yum install -y ncurses
+  yum install -y createrepo
 
 } &> /dev/null
 
