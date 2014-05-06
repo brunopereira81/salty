@@ -46,8 +46,25 @@ xcat_repo_add(){
 }
 
 xcat_cleanup(){
+  
+  # 'hard' re-install, will remove xCAT before installing it back
+  tput civis
 
   echo -e "Complete removal and re-install\n"
+
+  echo -e "Forcing removal of all xCAT packages:\c"
+  for i in $(rpm -qa); do
+    if [ "$(repoquery -i $i | grep Repository | awk '{print $3}')" == "xcat-2-core" ]; then
+      echo -e "\n\e[31m[Removing]\e[0m $i\c"
+      rpm -e --nodeps "$(repoquery -i $i | grep Name | awk '{print $3}')" &> /dev/null
+    fi
+    if [ "$(repoquery -i $i | grep Repository | awk '{print $3}')" == "xcat-dep" ]; then
+      echo -e "\n\e[31m[Removing]\e[0m $i\c"
+      rpm -e --nodeps "$(repoquery -i $i | grep Name | awk '{print $3}')" &> /dev/null
+    fi
+  done
+
+  xcat_repo_add
 
   rm -rf /install
   rm -rf /root/.xcat
@@ -58,22 +75,7 @@ xcat_cleanup(){
   rm -rf /opt/xcat/
   rm -rf /etc/xcat
 
-  echo -e "Forcing removal of all xCAT packages\c"
-  for i in $(rpm -qa); do
-    if [ "$(repoquery -i $i | grep Repository | awk '{print $3}')" == "xcat-2-core" ]; then
-      echo -e "\n\e[94m[Removing]\e[0m $i\c"
-      rpm -e --nodeps "$(repoquery -i $i | grep Name | awk '{print $3}')" &> /dev/null
-    fi
-    if [ "$(repoquery -i $i | grep Repository | awk '{print $3}')" == "xcat-dep" ]; then
-      echo -e "\n\e[94m[Removing]\e[0m $i\c"
-      rpm -e --nodeps "$(repoquery -i $i | grep Name | awk '{print $3}')" &> /dev/null
-    fi
-  done
-
-  xcat_repo_add
-  yum clean all &> /dev/null
-
-  echo -e "\nInstalling necessary packages and recreating files"
+  echo -e "\n\nInstalling necessary packages and recreating files:\c"
   for i in $(rpm -qa); do
     if [ "$(repoquery -i $i | grep Repository | awk '{print $3}')" == "xcat-2-core" ]; then
       echo -e "\n\e[32m[Installing]\e[0m $i\c"
@@ -85,13 +87,15 @@ xcat_cleanup(){
     fi
   done
   
-  yum clean all &> /dev/null
-
   echo -e "\nDone!"
+  tput cnorm
 
 }
 
 xcat_reset(){
+
+  # 'light' re-install, will not remove the packages, just install them over
+  tput civis
 
   echo -e "Found previous xCAT installation..."
   echo -e "Cleaning up and re-installing\n"
@@ -120,6 +124,7 @@ xcat_reset(){
   done
   
   echo -e "\nDone!"
+  tput cnorm
 
 }
 
