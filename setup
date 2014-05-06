@@ -20,16 +20,15 @@ requirement_setup(){
   yum install -y yum-utils
   yum install -y ncurses
 
+} &> /dev/null
+
+xcat_repo_add(){
+  
   reposync --config=./xCAT-repo/xCAT-Core.repo --repoid=xcat-2-core --download_path=./xCAT-repo
   createrepo ./xCAT-repo/xcat-2-core
 
   reposync --config=./xCAT-repo/xCAT-Deps.repo --repoid=xcat-deps --download_path=./xCAT-repo
   createrepo ./xCAT-repo/xcat-dep
-
-
-}
-
-xcat_repo_add(){
 
   rm -rf /etc/yum.repos.d/xCAT-Core.repo
   rm -rf /etc/yum.repos.d/xCAT-Deps.repo
@@ -46,7 +45,7 @@ xcat_repo_add(){
 	cat <<- EOF > /etc/yum.repos.d/xCAT-Deps.repo
 	[xcat-dep-local]
 	name=xCAT 2 depedencies
-	baseurl=https://sourceforge.net/projects/xcat/files/yum/xcat-dep/rh6/x86_64
+	baseurl=file:///root/salty/xCAT-repo/xcat-dep
 	enabled=1
 	gpgcheck=1
 	gpgkey=https://sourceforge.net/projects/xcat/files/yum/xcat-dep/rh6/x86_64/repodata/repomd.xml.key
@@ -62,16 +61,27 @@ xcat_cleanup(){
   echo -e "Complete removal and re-install\n"
 
   echo -e "Forcing removal of all xCAT packages:\c"
-  for i in $(rpm -qa); do
-    if [ "$(repoquery -i $i | grep Repository | awk '{print $3}')" == "xcat-2-core-local" ]; then
-      echo -e "\n\e[31m[Removing]\e[0m $i\c"
-      rpm -e --nodeps "$(repoquery -i $i | grep Name | awk '{print $3}')" &> /dev/null
-    fi
-    if [ "$(repoquery -i $i | grep Repository | awk '{print $3}')" == "xcat-dep-local" ]; then
-      echo -e "\n\e[31m[Removing]\e[0m $i\c"
-      rpm -e --nodeps "$(repoquery -i $i | grep Name | awk '{print $3}')" &> /dev/null
-    fi
+  for pkg in $(repoquery --repoid=xcat-2-core-local -qa); do
+    echo -e "\n\e[31m[Removing]\e[0m $pkg\c"
+    yum remove  $pkg #&> /dev/null
   done
+
+  for pkg in $(repoquery --repoid=xcat-dep-local -qa); do
+    echo -e "\n\e[31m[Removing]\e[0m $pkg\c"
+    yum remove $pkg #&> /dev/null
+  done
+
+
+  #for i in $(rpm -qa); do
+  #  if [ "$(repoquery -i $i | grep Repository | awk '{print $3}')" == "xcat-2-core-local" ]; then
+  #    echo -e "\n\e[31m[Removing]\e[0m $i\c"
+  #    rpm -e --nodeps "$(repoquery -i $i | grep Name | awk '{print $3}')" &> /dev/null
+  #  fi
+  #  if [ "$(repoquery -i $i | grep Repository | awk '{print $3}')" == "xcat-dep-local" ]; then
+  #    echo -e "\n\e[31m[Removing]\e[0m $i\c"
+  #    rpm -e --nodeps "$(repoquery -i $i | grep Name | awk '{print $3}')" &> /dev/null
+  #  fi
+  #done
 
   xcat_repo_add
 
@@ -85,16 +95,18 @@ xcat_cleanup(){
   rm -rf /etc/xcat
 
   echo -e "\n\nInstalling necessary packages and creating new configuration files:"
-  for i in $(rpm -qa); do
-    if [ "$(repoquery -i $i | grep Repository | awk '{print $3}')" == "xcat-2-core-local" ]; then
-      echo -e "\n\e[32m[Installing]\e[0m $i\c"
-      yum reinstall -y "$(repoquery -i $i | grep Name | awk '{print $3}')" &> /dev/null
-    fi
-    if [ "$(repoquery -i $i | grep Repository | awk '{print $3}')" == "xcat-dep-local" ]; then
-      echo -e "\n\e[32m[Installing]\e[0m $i\c"
-      yum reinstall -y "$(repoquery -i $i | grep Name | awk '{print $3}')" &> /dev/null
-    fi
-  done
+  yum install $(repoquery -i xCAT | grep Name | awk '{print $3}')
+
+  #for i in $(rpm -qa); do
+  #  if [ "$(repoquery -i $i | grep Repository | awk '{print $3}')" == "xcat-2-core-local" ]; then
+  #    echo -e "\n\e[32m[Installing]\e[0m $i\c"
+  #    yum reinstall -y "$(repoquery -i $i | grep Name | awk '{print $3}')" &> /dev/null
+  #  fi
+  #  if [ "$(repoquery -i $i | grep Repository | awk '{print $3}')" == "xcat-dep-local" ]; then
+  #    echo -e "\n\e[32m[Installing]\e[0m $i\c"
+  #    yum reinstall -y "$(repoquery -i $i | grep Name | awk '{print $3}')" &> /dev/null
+  #  fi
+  #done
   
   echo -e "\nDone!"
   tput cnorm
@@ -121,16 +133,18 @@ xcat_reset(){
   xcat_repo_add
 
   echo -e "\nInstalling necessary packages and creating new configuration files:"
-  for i in $(rpm -qa); do
-    if [ "$(repoquery -i $i | grep Repository | awk '{print $3}')" == "xcat-2-core-local" ]; then
-      echo -e "\n\e[32m[Installing]\e[0m $i\c"
-      yum reinstall -y "$(repoquery -i $i | grep Name | awk '{print $3}')" &> /dev/null
-    fi
-    if [ "$(repoquery -i $i | grep Repository | awk '{print $3}')" == "xcat-dep-local" ]; then
-      echo -e "\n\e[32m[Installing]\e[0m $i\c"
-      yum reinstall -y "$(repoquery -i $i | grep Name | awk '{print $3}')" &> /dev/null
-    fi
-  done
+  yum reinstall $(repoquery --requires --recursive --resolve xCAT)
+  
+  #for i in $(rpm -qa); do
+  #  if [ "$(repoquery -i $i | grep Repository | awk '{print $3}')" == "xcat-2-core-local" ]; then
+  #    echo -e "\n\e[32m[Installing]\e[0m $i\c"
+  #    yum reinstall -y "$(repoquery -i $i | grep Name | awk '{print $3}')" &> /dev/null
+  #  fi
+  #  if [ "$(repoquery -i $i | grep Repository | awk '{print $3}')" == "xcat-dep-local" ]; then
+  #    echo -e "\n\e[32m[Installing]\e[0m $i\c"
+  #    yum reinstall -y "$(repoquery -i $i | grep Name | awk '{print $3}')" &> /dev/null
+  #  fi
+  #done
   
   echo -e "\nDone!"
   tput cnorm
