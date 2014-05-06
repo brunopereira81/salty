@@ -95,7 +95,7 @@ xcat_cleanup(){
   rm -rf /etc/xcat
 
   echo -e "\n\nInstalling necessary packages and creating new configuration files:"
-  yum install $(repoquery -i xCAT | grep Name | awk '{print $3}')
+  yum install $(repoquery --requires --recursive --resolve -i xCAT | grep Name | awk '{print $3}')
 
   #for i in $(rpm -qa); do
   #  if [ "$(repoquery -i $i | grep Repository | awk '{print $3}')" == "xcat-2-core-local" ]; then
