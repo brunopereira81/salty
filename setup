@@ -6,7 +6,9 @@ _CURRENT_DIR=$(pwd)
 _EPEL_RELEASE=http://ftp.linux.ncsu.edu/pub/epel/6/i386/epel-release-6-8.noarch.rpm
 _CONTROLLER_NAME=""
 
+echo -e \\033ct clear
 tput clear
+
 echo -e "\n                   /\\___/\\"
 echo -e "                   \\ -.- /"
 echo -e "                   \`-.^.-'          **xCAT** "   
@@ -75,7 +77,7 @@ xcat_cleanup(){
   rm -rf /opt/xcat/
   rm -rf /etc/xcat
 
-  echo -e "\n\nInstalling necessary packages and recreating files:\c"
+  echo -e "\n\nInstalling necessary packages and creating new configuration files:\c"
   for i in $(rpm -qa); do
     if [ "$(repoquery -i $i | grep Repository | awk '{print $3}')" == "xcat-2-core" ]; then
       echo -e "\n\e[32m[Installing]\e[0m $i\c"
@@ -94,7 +96,7 @@ xcat_cleanup(){
 
 xcat_reset(){
 
-  # 'light' re-install, will not remove the packages, just install them over
+  # 'light' re-install, will not remove the packages, just install over existing ones
   tput civis
 
   echo -e "Found previous xCAT installation..."
@@ -111,7 +113,7 @@ xcat_reset(){
 
   xcat_repo_add
 
-  echo -e "\nInstalling necessary packages and recreating files"
+  echo -e "\nInstalling necessary packages and creating new configuration files:"
   for i in $(rpm -qa); do
     if [ "$(repoquery -i $i | grep Repository | awk '{print $3}')" == "xcat-2-core" ]; then
       echo -e "\n\e[32m[Installing]\e[0m $i\c"
