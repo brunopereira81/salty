@@ -48,7 +48,8 @@ xcat_repo_add(){
 
 xcat_cleanup(){
 
-  echo -e "Cleaning up everything and re-installing"
+  echo -e "Complete removal and re-install\n"
+
   rm -rf /install
   rm -rf /root/.xcat
   rm -rf /tftpboot
@@ -60,6 +61,7 @@ xcat_cleanup(){
 
   xcat_repo_add
 
+  echo -e "\nRemoving all xCAT packages"
   for i in $(rpm -qa); do
     if [ "$(repoquery -i $i | grep Repository | awk '{print $3}')" == "xcat-2-core" ]; then
       echo -e "\n\e[94m[Removing]\e[0m $i\c"
@@ -72,13 +74,19 @@ xcat_cleanup(){
   done
   
   yum clean all &> /dev/null
+
+  echo -e "Installing xCAT"
   yum install -y xCAT &> /dev/null
+
+  echo -e "\nDone!"
 
 }
 
-xcat_remove(){
+xcat_reset(){
 
-  echo -e "Removing previous files and directories"
+
+  echo -e "Found previous xCAT installation..."
+  echo -e "Cleaning up everything and re-installing\n"
 
   rm -rf /install
   rm -rf /root/.xcat
@@ -89,10 +97,9 @@ xcat_remove(){
   rm -rf /opt/xcat/
   rm -rf /etc/xcat
 
-  echo -e "Restoring repository information"
   xcat_repo_add
 
-  echo -e "Installing necessary packages and recreating files:\n"
+  echo -e "\nInstalling necessary packages and recreating files"
   for i in $(rpm -qa); do
     if [ "$(repoquery -i $i | grep Repository | awk '{print $3}')" == "xcat-2-core" ]; then
       echo -e "\n\e[32m[Installing]\e[0m $i\c"
@@ -103,6 +110,8 @@ xcat_remove(){
       yum reinstall -y "$(repoquery -i $i | grep Name | awk '{print $3}')" &> /dev/null
     fi
   done
+  
+  echo -e "\nDone!"
 
 }
 
@@ -111,8 +120,7 @@ xcat_cleanup
 else
   requirement_setup
   if [ -n "$(rpm -qa | grep xCAT)" ]; then
-    echo -e "Cleaning up previous xCAT installation:\n"
-    xcat_remove
+    xcat_reset
   else
     echo -e "Installing xCAT"
     xcat_repo_add
