@@ -19,6 +19,7 @@ echo -e "“Cats are intended to teach us that not everything in nature has a pu
 requirement_setup(){
 
   yum install -y yum-utils
+  yum install -y ncurses 
 
 }
 
@@ -49,7 +50,7 @@ xcat_repo_add(){
 
 xcat_cleanup(){
 
-  echo -e "Cleaning up everything and re-installing."
+  echo -e "Cleaning up everything and re-installing"
   rm -rf /install
   rm -rf /root/.xcat
   rm -rf /tftpboot
@@ -64,15 +65,16 @@ xcat_cleanup(){
   for i in $(rpm -qa); do
     if [ "$(repoquery -i $i | grep Repository | awk '{print $3}')" == "xcat-2-core" ]; then
       echo -e "\n$(tput setf 5)[Removing]$(tput sgr0) $i\c"
-      rpm -e --nodeps "$(repoquery -i $i | grep Name | awk '{print $3}')"
+      rpm -e --nodeps "$(repoquery -i $i | grep Name | awk '{print $3}')" &> /dev/null
     fi
     if [ "$(repoquery -i $i | grep Repository | awk '{print $3}')" == "xcat-dep" ]; then
       echo -e "\n$(tput setf 5)[Removing]$(tput sgr0) $i\c"
-      rpm -e --nodeps "$(repoquery -i $i | grep Name | awk '{print $3}')"
+      rpm -e --nodeps "$(repoquery -i $i | grep Name | awk '{print $3}')" &> /dev/null
     fi
   done
-
-  yum install -y xCAT &> /dev/null
+  
+  yum clean all
+  yum install -y xCAT
 
 }
 
@@ -97,12 +99,10 @@ xcat_remove(){
     if [ "$(repoquery -i $i | grep Repository | awk '{print $3}')" == "xcat-2-core" ]; then
       echo -e "$(tput setf 2)[Installing]$(tput sgr0) $i\c"
       yum reinstall -y "$(repoquery -i $i | grep Name | awk '{print $3}')" &> /dev/null
-      #rpm -e --nodeps "$(repoquery -i $i | grep Name | awk '{print $3}')"
     fi
     if [ "$(repoquery -i $i | grep Repository | awk '{print $3}')" == "xcat-dep" ]; then
       echo -e "$(tput setf 2)[Installing]$(tput sgr0) $i\c"
       yum reinstall -y "$(repoquery -i $i | grep Name | awk '{print $3}')" &> /dev/null
-      #rpm -e --nodeps "$(repoquery -i $i | grep Name | awk '{print $3}')"
     fi
   done
 
@@ -111,6 +111,7 @@ xcat_remove(){
 if [ "$1" == "clean" ]; then
 xcat_cleanup
 else
+  requirement_setup
   if [ -n "$(rpm -qa | grep xCAT)" ]; then
     echo -e "Cleaning up previous xCAT installation:\n"
     xcat_remove
