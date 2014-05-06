@@ -11,14 +11,14 @@ _EPEL_RELEASE=http://ftp.linux.ncsu.edu/pub/epel/6/i386/epel-release-6-8.noarch.
 _CONTROLLER_NAME=""
 
 echo -e "\n                   /\\___/\\"
-echo "                   \\ -.- /"
-echo "                   \`-.^.-'          **xCAT** "   
+echo -e "                   \\ -.- /"
+echo -e "                   \`-.^.-'          **xCAT** "   
 echo -e "                     /\"\  \n"
 echo -e "“Cats are intended to teach us that not everything in nature has a purpose.” \n"
 
 clean(){
 
-  rpm -e $_EPEL_RELEASE
+  rm -rf /etc/yum.repos.d/xCAT-*
   yum --enablerepo=epel-testing remove -y salt-master
   yum --enablerepo=epel-testing remove -y salt-minion
   rm -rf /etc/salt
@@ -45,6 +45,7 @@ xcat_pre(){
         gpgcheck=1
         gpgkey=https://sourceforge.net/projects/xcat/files/yum/xcat-dep/rh6/x86_64/repodata/repomd.xml.key
 	EOF
+
   yum update -y
   yum install -y xCAT
 
