@@ -61,7 +61,7 @@ xcat_cleanup(){
 
   xcat_repo_add
 
-  echo -e "\nRemoving all xCAT packages"
+  echo -e "\nRemoving all xCAT packages and forcing install"
   for i in $(rpm -qa); do
     if [ "$(repoquery -i $i | grep Repository | awk '{print $3}')" == "xcat-2-core" ]; then
       echo -e "\n\e[94m[Removing]\e[0m $i\c"
@@ -84,9 +84,8 @@ xcat_cleanup(){
 
 xcat_reset(){
 
-
   echo -e "Found previous xCAT installation..."
-  echo -e "Cleaning up everything and re-installing\n"
+  echo -e "Cleaning up and re-installing\n"
 
   rm -rf /install
   rm -rf /root/.xcat
