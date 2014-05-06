@@ -49,7 +49,6 @@ xcat_repo_add(){
 
 xcat_cleanup(){
 
-
   echo -e "Cleaning up everything and re-installing."
   rm -rf /install
   rm -rf /root/.xcat
@@ -64,11 +63,11 @@ xcat_cleanup(){
 
   for i in $(rpm -qa); do
     if [ "$(repoquery -i $i | grep Repository | awk '{print $3}')" == "xcat-2-core" ]; then
-      echo -e "$(tput setf 5)[Removing]$(tput sgr0) $i\c"
+      echo -e "\n$(tput setf 5)[Removing]$(tput sgr0) $i\c"
       rpm -e --nodeps "$(repoquery -i $i | grep Name | awk '{print $3}')"
     fi
     if [ "$(repoquery -i $i | grep Repository | awk '{print $3}')" == "xcat-dep" ]; then
-      echo -e "$(tput setf 5)[Removing]$(tput sgr0) $i\c"
+      echo -e "\n$(tput setf 5)[Removing]$(tput sgr0) $i\c"
       rpm -e --nodeps "$(repoquery -i $i | grep Name | awk '{print $3}')"
     fi
   done
