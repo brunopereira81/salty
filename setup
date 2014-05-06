@@ -6,7 +6,6 @@ _CURRENT_DIR=$(pwd)
 _EPEL_RELEASE=http://ftp.linux.ncsu.edu/pub/epel/6/i386/epel-release-6-8.noarch.rpm
 _CONTROLLER_NAME=""
 
-
 tput clear
 echo -e "\n                   /\\___/\\"
 echo -e "                   \\ -.- /"
@@ -59,9 +58,7 @@ xcat_cleanup(){
   rm -rf /opt/xcat/
   rm -rf /etc/xcat
 
-  xcat_repo_add
-
-  echo -e "\nRemoving all xCAT packages and forcing install"
+  echo -e "Forcing removal of all xCAT packages\c"
   for i in $(rpm -qa); do
     if [ "$(repoquery -i $i | grep Repository | awk '{print $3}')" == "xcat-2-core" ]; then
       echo -e "\n\e[94m[Removing]\e[0m $i\c"
@@ -72,11 +69,23 @@ xcat_cleanup(){
       rpm -e --nodeps "$(repoquery -i $i | grep Name | awk '{print $3}')" &> /dev/null
     fi
   done
-  
+
+  xcat_repo_add
   yum clean all &> /dev/null
 
-  echo -e "Installing xCAT"
-  yum install -y xCAT &> /dev/null
+  echo -e "\nInstalling necessary packages and recreating files"
+  for i in $(rpm -qa); do
+    if [ "$(repoquery -i $i | grep Repository | awk '{print $3}')" == "xcat-2-core" ]; then
+      echo -e "\n\e[32m[Installing]\e[0m $i\c"
+      yum reinstall -y "$(repoquery -i $i | grep Name | awk '{print $3}')" &> /dev/null
+    fi
+    if [ "$(repoquery -i $i | grep Repository | awk '{print $3}')" == "xcat-dep" ]; then
+      echo -e "\n\e[32m[Installing]\e[0m $i\c"
+      yum reinstall -y "$(repoquery -i $i | grep Name | awk '{print $3}')" &> /dev/null
+    fi
+  done
+  
+  yum clean all &> /dev/null
 
   echo -e "\nDone!"
 
