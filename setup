@@ -7,6 +7,7 @@ _EPEL_RELEASE=http://ftp.linux.ncsu.edu/pub/epel/6/i386/epel-release-6-8.noarch.
 _CONTROLLER_NAME=""
 
 
+tput clear
 echo -e "\n                   /\\___/\\"
 echo -e "                   \\ -.- /"
 echo -e "                   \`-.^.-'          **xCAT** "   
@@ -105,7 +106,6 @@ xcat_remove(){
 
 }
 
-tput clear
 if [ "$1" == "clean" ]; then
 xcat_cleanup
 else
