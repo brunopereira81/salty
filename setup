@@ -33,13 +33,13 @@ xcat_remove(){
   for i in $(rpm -qa); do
     if [ "$(repoquery -i $i | grep Repository | awk '{print $3}')" == "xcat-2-core" ]; then
       echo $i
-      #yum reinstall -y "$(repoquery -i $i | grep Name | awk '{print $3}')"
-      rpm -e --nodeps "$(repoquery -i $i | grep Name | awk '{print $3}')"
+      yum reinstall -y "$(repoquery -i $i | grep Name | awk '{print $3}')"
+      #rpm -e --nodeps "$(repoquery -i $i | grep Name | awk '{print $3}')"
     fi
     if [ "$(repoquery -i $i | grep Repository | awk '{print $3}')" == "xcat-dep" ]; then
       echo $i
-      #yum reinstall -y "$(repoquery -i $i | grep Name | awk '{print $3}')"
-      rpm -e --nodeps "$(repoquery -i $i | grep Name | awk '{print $3}')"
+      yum reinstall -y "$(repoquery -i $i | grep Name | awk '{print $3}')"
+      #rpm -e --nodeps "$(repoquery -i $i | grep Name | awk '{print $3}')"
     fi
   done
 
