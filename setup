@@ -16,6 +16,17 @@ echo -e "“Cats are intended to teach us that not everything in nature has a pu
 
 clean(){
 
+  for i in $(rpm -qa); do
+    if [ "$(repoquery -i $i | grep Repository | awk '{print $3}')" == "xcat-2-core" ]; then
+      echo $i
+      rpm -e --nodeps "$(repoquery -i $i | grep Name | awk '{print $3}')"
+    fi
+    if [ "$(repoquery -i $i | grep Repository | awk '{print $3}')" == "xcat-dep" ]; then
+      echo $i
+      rpm -e --nodeps "$(repoquery -i $i | grep Name | awk '{print $3}')"
+    fi
+  done
+
   rm -rf /etc/yum.repos.d/xCAT*
 
 }
