@@ -20,14 +20,14 @@ requirement_setup(){
   yum install -y yum-utils
   yum install -y createrepo
 
-} &> /dev/null
+} # &> /dev/null
 
 xcat_repo_add(){
   
   reposync --config=./xCAT-repo/xCAT-Core.repo --repoid=xcat-2-core --download_path=./xCAT-repo
   createrepo ./xCAT-repo/xcat-2-core
 
-  reposync --config=./xCAT-repo/xCAT-Deps.repo --repoid=xcat-deps --download_path=./xCAT-repo
+  reposync --config=./xCAT-repo/xCAT-Deps.repo --repoid=xcat-dep --download_path=./xCAT-repo
   createrepo ./xCAT-repo/xcat-dep
 
   rm -rf /etc/yum.repos.d/xCAT-Core.repo
@@ -51,40 +51,20 @@ xcat_repo_add(){
 	gpgkey=https://sourceforge.net/projects/xcat/files/yum/xcat-dep/rh6/x86_64/repodata/repomd.xml.key
 	EOF
 
-}
+} #&> /dev/null
 
 xcat_cleanup(){
   
   # 'hard' re-install, will remove xCAT before installing it back
-  tput civis
-
   echo -e "Complete removal and re-install\n"
 
-  echo -e "Forcing removal of all xCAT packages:\c"
+  echo -e "Forcing removal of all xCAT packages:\n"
   for pkg in $(repoquery --repoid=xcat-2-core-local -qa); do
-    echo -e "\n\e[31m[Removing]\e[0m $pkg\c"
-    yum remove  $pkg #&> /dev/null
+   spacing=`expr 50 - ${#pkg}`
+   echo -e "\e[31m[ Removing ]\e[0m "$(head -c $spacing < /dev/zero | tr '\0' '.')" $pkg"
+   yum remove -y  $pkg #&> /dev/null
   done
-
-  for pkg in $(repoquery --repoid=xcat-dep-local -qa); do
-    echo -e "\n\e[31m[Removing]\e[0m $pkg\c"
-    yum remove $pkg #&> /dev/null
-  done
-
-
-  #for i in $(rpm -qa); do
-  #  if [ "$(repoquery -i $i | grep Repository | awk '{print $3}')" == "xcat-2-core-local" ]; then
-  #    echo -e "\n\e[31m[Removing]\e[0m $i\c"
-  #    rpm -e --nodeps "$(repoquery -i $i | grep Name | awk '{print $3}')" &> /dev/null
-  #  fi
-  #  if [ "$(repoquery -i $i | grep Repository | awk '{print $3}')" == "xcat-dep-local" ]; then
-  #    echo -e "\n\e[31m[Removing]\e[0m $i\c"
-  #    rpm -e --nodeps "$(repoquery -i $i | grep Name | awk '{print $3}')" &> /dev/null
-  #  fi
-  #done
-
-  xcat_repo_add
-
+  
   rm -rf /install
   rm -rf /root/.xcat
   rm -rf /tftpboot
@@ -94,31 +74,12 @@ xcat_cleanup(){
   rm -rf /opt/xcat/
   rm -rf /etc/xcat
 
-  echo -e "\n\nInstalling necessary packages and creating new configuration files:"
-  yum reinstall $(repoquery --requires --recursive --resolve -i xCAT | grep Name | awk '{print $3}')
-
-  #for i in $(rpm -qa); do
-  #  if [ "$(repoquery -i $i | grep Repository | awk '{print $3}')" == "xcat-2-core-local" ]; then
-  #    echo -e "\n\e[32m[Installing]\e[0m $i\c"
-  #    yum reinstall -y "$(repoquery -i $i | grep Name | awk '{print $3}')" &> /dev/null
-  #  fi
-  #  if [ "$(repoquery -i $i | grep Repository | awk '{print $3}')" == "xcat-dep-local" ]; then
-  #    echo -e "\n\e[32m[Installing]\e[0m $i\c"
-  #    yum reinstall -y "$(repoquery -i $i | grep Name | awk '{print $3}')" &> /dev/null
-  #  fi
-  #done
-  
-  echo -e "\nDone!"
-  tput cnorm
-
 }
 
 xcat_reset(){
 
   # 'light' re-install, will not remove the packages, just install over existing ones
-  tput civis
 
-  echo -e "Found previous xCAT installation..."
   echo -e "Cleaning up and re-installing\n"
 
   rm -rf /install
@@ -132,31 +93,27 @@ xcat_reset(){
 
   xcat_repo_add
 
-  echo -e "\nInstalling necessary packages and creating new configuration files:"
-  yum reinstall $(repoquery --requires --recursive --resolve xCAT)
-  
-  #for i in $(rpm -qa); do
-  #  if [ "$(repoquery -i $i | grep Repository | awk '{print $3}')" == "xcat-2-core-local" ]; then
-  #    echo -e "\n\e[32m[Installing]\e[0m $i\c"
-  #    yum reinstall -y "$(repoquery -i $i | grep Name | awk '{print $3}')" &> /dev/null
-  #  fi
-  #  if [ "$(repoquery -i $i | grep Repository | awk '{print $3}')" == "xcat-dep-local" ]; then
-  #    echo -e "\n\e[32m[Installing]\e[0m $i\c"
-  #    yum reinstall -y "$(repoquery -i $i | grep Name | awk '{print $3}')" &> /dev/null
-  #  fi
-  #done
-  
-  echo -e "\nDone!"
-  tput cnorm
+  echo -e "Installing necessary packages and creating new configuration files:\n"
+  for pkg in $(repoquery --requires --recursive --resolve -i xCAT | grep "Name        :" | awk '{print $3}'); do
+    pkg_name=$(repoquery -qa $pkg)
+    spacing=`expr 50 - ${#pkg_name}`
+    echo -e "\e[32m[Installing]\e[0m $(head -c $spacing < /dev/zero | tr '\0' '.') $pkg_name"
+    yum reinstall -y $pkg # &> /dev/null
+  done
+ 
+  echo -e "\nDone!\n"
 
 }
 
 if [ "$1" == "clean" ]; then
-requirement_setup
-xcat_cleanup
+  requirement_setup
+  xcat_cleanup
+  xcat_repo_add
+  xcat_reset
 else
   requirement_setup
   if [ -n "$(rpm -qa | grep xCAT)" ]; then
+    echo -e "Found previous xCAT installation..."
     xcat_reset
   else
     echo -e "Installing xCAT"
