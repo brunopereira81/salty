@@ -150,6 +150,22 @@ system_xcat_config(){
 
 }
 
+post_xcat_install(){
+
+. /etc/profile.d/xcat.sh
+echo -e "\nRestoring xCat tables: $(/opt/xcat/sbin/restorexCATdb -p ./tables)"
+/opt/xcat/sbin/chtab netname=10_141_0_0-255_255_0_0 networks.dynamicrange=10.141.230.1-10.141.239.254
+/opt/xcat/sbin/nodeadd node001-node004 groups=compute
+/opt/xcat/sbin/makehosts
+/opt/xcat/sbin/makedhcp -n
+/opt/xcat/sbin/makedhcp -a
+/opt/xcat/sbin/makedns -n
+
+service dhcpd restart
+service named restart
+
+}
+
 system_xcat_config
 
 if [ "$1" == "clean" ]; then
@@ -169,7 +185,3 @@ else
     yum install -y $(repoquery --requires --recursive --resolve -i xCAT | grep "Name        :" | awk '{print $3}') $_EXTRA_PKGS &> /dev/null
   fi
 fi
-
-. /etc/profile.d/xcat.sh
-echo -e "\nRestoring xCat tables: $(/opt/xcat/sbin/restorexCATdb -p /srv/salt/base/controller/files/tables)"
-
