@@ -55,32 +55,29 @@ xcat_repo_add(){
 
 xcat_cleanup(){
   
-  # 'hard' re-install, will remove xCAT before installing it back
+  # forced 'hard' re-install, will remove xCAT packages
+
   echo -e "Complete removal and re-install\n"
 
   echo -e "Forcing removal of all xCAT packages:\n"
   for pkg in $(repoquery --repoid=xcat-2-core-local -qa); do
-   spacing=`expr 50 - ${#pkg}`
-   echo -e "\e[31m[ Removing ]\e[0m "$(head -c $spacing < /dev/zero | tr '\0' '.')" $pkg"
-   yum remove -y  $pkg #&> /dev/null
+   echo -e "\e[31m[ Removing ]\e[0m $(seq -s. $(expr 65 - ${#pkg})|tr -d '[:digit:]') $pkg"
+   yum remove -y $pkg &> /dev/null
   done
-  
-  rm -rf /install
-  rm -rf /root/.xcat
-  rm -rf /tftpboot
-  rm -rf /etc/apache2/conf.d/xcat.conf
-  rm -rf /etc/httpd/conf.d/xcat.conf
-  rm -rf /etc/xCATMN
-  rm -rf /opt/xcat/
-  rm -rf /etc/xcat
+
+  for pkg in $(repoquery --repoid=xcat-dep-local -qa); do
+   echo -e "\e[31m[ Removing ]\e[0m $(seq -s. $(expr 65 - ${#pkg})|tr -d '[:digit:]') $pkg"
+   yum remove -y $pkg &> /dev/null
+  done
+
 
 }
 
 xcat_reset(){
 
-  # 'light' re-install, will not remove the packages, just install over existing ones
+  # 'light' re-install: will not remove the packages, just install over existing ones
 
-  echo -e "Cleaning up and re-installing\n"
+  echo -e "\nCleaning up and re-installing\n"
 
   rm -rf /install
   rm -rf /root/.xcat
@@ -91,18 +88,16 @@ xcat_reset(){
   rm -rf /opt/xcat/
   rm -rf /etc/xcat
 
-  xcat_repo_add
-
   for pkg in $(repoquery --requires --recursive --resolve -i xCAT | grep "Name        :" | awk '{print $3}'); do
     name=$(repoquery -qa $pkg)
-    spacing=`expr 50 - ${#name}`
-    echo -e "\e[31m[ Removing ]\e[0m "$(head -c $spacing < /dev/zero | tr '\0' '.')" $name"
-    rpm -e --justdb --nodeps $pkg #&> /dev/null
+    echo -e "\e[33m[ Cleaning ]\e[0m $(seq -s. $(expr 65 - ${#name})|tr -d '[:digit:]') $name"
+    rpm -e --justdb --nodeps $pkg &> /dev/null
   done
 
   echo -e "Installing necessary packages and creating new configuration files:\n"
-  yum install -y xCAT #&> /dev/null
- 
+  for pkg in $(repoquery --requires --recursive --resolve -i xCAT | grep "Name        :" | awk '{print $3}'); do
+    yum install -y $pkg #&> /dev/null
+  done
   echo -e "\nDone!\n"
 
 }
@@ -114,6 +109,7 @@ if [ "$1" == "clean" ]; then
   xcat_reset
 else
   requirement_setup
+  xcat_repo_add
   if [ -n "$(rpm -qa | grep xCAT)" ]; then
     echo -e "Found previous xCAT installation..."
     xcat_reset
