@@ -70,7 +70,6 @@ xcat_cleanup(){
    yum remove -y $pkg &> /dev/null
   done
 
-
 }
 
 xcat_reset(){
@@ -94,11 +93,37 @@ xcat_reset(){
     rpm -e --justdb --nodeps $pkg &> /dev/null
   done
 
-  echo -e "Installing necessary packages and creating new configuration files:\n"
-  for pkg in $(repoquery --requires --recursive --resolve -i xCAT | grep "Name        :" | awk '{print $3}'); do
-    yum install -y $pkg #&> /dev/null
-  done
+  echo -e "\nInstalling necessary packages and creating new configuration files:\n"
+  yum install -y $(repoquery --requires --recursive --resolve -i xCAT | grep "Name        :" | awk '{print $3}')
   echo -e "\nDone!\n"
+
+}
+
+xcat_setup(){
+
+  #Network definitions
+
+	cat <<- EOF > /etc/ntp.conf
+	server 127.127.1.0
+	fudge 127.127.1.0 stratum 10
+	server 0.europe.pool.ntp.org iburst
+	server 1.europe.pool.ntp.org iburst 
+	server 2.europe.pool.ntp.org iburst
+	server 3.europe.pool.ntp.org iburst
+	driftfile /var/lib/ntp/drift
+	EOF
+
+	cat <<- EOF > /etc/sysconfig/network
+	HOSTNAME=controller
+	EOF
+
+	cat <<- EOF > /etc/hosts
+	10.141.255.254	controller controller.cluster
+	EOF
+
+  hostname controller
+  service network restart
+
 
 }
 
@@ -119,3 +144,5 @@ else
     yum install -y xCAT
   fi
 fi
+
+xcat_setup
