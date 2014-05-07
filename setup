@@ -97,8 +97,9 @@ xcat_reset(){
   for pkg in $(repoquery --requires --recursive --resolve -i xCAT | grep "Name        :" | awk '{print $3}'); do
     pkg_name=$(repoquery -qa $pkg)
     spacing=`expr 50 - ${#pkg_name}`
-    echo -e "\e[32m[Installing]\e[0m $(head -c $spacing < /dev/zero | tr '\0' '.') $pkg_name"
-    yum reinstall -y $pkg # &> /dev/null
+    echo -e "\e[32m[ Installing ]\e[0m $(head -c $spacing < /dev/zero | tr '\0' '.') $pkg_name"
+    rpm -e --justdb --nodeps $pkg
+    yum install -y $pkg #&> /dev/null
   done
  
   echo -e "\nDone!\n"
