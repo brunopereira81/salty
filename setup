@@ -15,7 +15,7 @@ echo -e "                   \`-.^.-'          **xCAT** "
 echo -e "                     /\"\  \n"
 echo -e "“Cats are intended to teach us that not everything in nature has a purpose.” \n"
 
-requirement_setup(){
+install_requirements(){
 
   yum install -y yum-utils
   yum install -y createrepo
@@ -61,12 +61,12 @@ xcat_cleanup(){
 
   echo -e "Forcing removal of all xCAT packages:\n"
   for pkg in $(repoquery --repoid=xcat-2-core-local -qa); do
-   echo -e "\e[31m[ Removing ]\e[0m $(seq -s. $(expr 65 - ${#pkg})|tr -d '[:digit:]') $pkg"
+   echo -e "\e[31m[ Removing ]\e[0m $(seq -s. $(expr 60 - ${#pkg})|tr -d '[:digit:]') $pkg"
    yum remove -y $pkg &> /dev/null
   done
 
   for pkg in $(repoquery --repoid=xcat-dep-local -qa); do
-   echo -e "\e[31m[ Removing ]\e[0m $(seq -s. $(expr 65 - ${#pkg})|tr -d '[:digit:]') $pkg"
+   echo -e "\e[31m[ Removing ]\e[0m $(seq -s. $(expr 60 - ${#pkg})|tr -d '[:digit:]') $pkg"
    yum remove -y $pkg &> /dev/null
   done
 
@@ -89,19 +89,19 @@ xcat_reset(){
 
   for pkg in $(repoquery --requires --recursive --resolve -i xCAT | grep "Name        :" | awk '{print $3}'); do
     name=$(repoquery -qa $pkg)
-    echo -e "\e[33m[ Cleaning ]\e[0m $(seq -s. $(expr 65 - ${#name})|tr -d '[:digit:]') $name"
+    echo -e "\e[33m[ Cleaning ]\e[0m $(seq -s. $(expr 60 - ${#name})|tr -d '[:digit:]') $name"
     rpm -e --justdb --nodeps $pkg &> /dev/null
   done
 
   echo -e "\nInstalling necessary packages and creating new configuration files:\n"
-  yum install -y $(repoquery --requires --recursive --resolve -i xCAT | grep "Name        :" | awk '{print $3}')
+  yum install -y $(repoquery --requires --recursive --resolve -i xCAT | grep "Name        :" | awk '{print $3}') &> /dev/null
   echo -e "\nDone!\n"
 
 }
 
-xcat_setup(){
+xcat_prepare(){
 
-  #Network definitions
+  #Network configuration
 
 	cat <<- EOF > /etc/ntp.conf
 	server 127.127.1.0
@@ -114,18 +114,42 @@ xcat_setup(){
 	EOF
 
 	cat <<- EOF > /etc/sysconfig/network
+	NETWORKING=yes
 	HOSTNAME=controller
 	EOF
 
 	cat <<- EOF > /etc/hosts
+	127.0.0.1	localhost
 	10.141.255.254	controller controller.cluster
 	EOF
 
-  hostname controller
-  service network restart
+	cat <<- EOF > /etc/sysconfig/network-scripts/ifcfg-eth0
+	DEVICE=eth0
+	ONBOOT=yes
+	BOOTPROTO=static
+	IPADDR=10.141.255.254
+	PREFIX=16
+	EOF
 
+	cat <<- EOF > /etc/sysconfig/network-scripts/ifcfg-eth1
+	DEVICE=eth1
+	ONBOOT=yes
+	BOOTPROTO=dhcp
+	PEERDNS=no
+	EOF
+
+	cat <<- EOF > /etc/resolv.conf
+	search cluster
+	nameserver 10.141.255.254
+	nameserver 8.8.8.8
+	EOF
+
+  hostname controller
+  service network restart &> /dev/null
 
 }
+
+xcat_prepare
 
 if [ "$1" == "clean" ]; then
   requirement_setup
@@ -133,7 +157,7 @@ if [ "$1" == "clean" ]; then
   xcat_repo_add
   xcat_reset
 else
-  requirement_setup
+  install_requirements
   xcat_repo_add
   if [ -n "$(rpm -qa | grep xCAT)" ]; then
     echo -e "Found previous xCAT installation..."
@@ -141,8 +165,8 @@ else
   else
     echo -e "Installing xCAT"
     xcat_repo_add
-    yum install -y xCAT
+    yum install -y $(repoquery --requires --recursive --resolve -i xCAT | grep "Name        :" | awk '{print $3}') # &> /dev/null
   fi
 fi
 
-xcat_setup
+. /etc/profile.d/xcat.sh
