@@ -5,6 +5,7 @@ _SALT_ROOTFILES=/srv
 _CURRENT_DIR=$(pwd)
 _EPEL_RELEASE=http://ftp.linux.ncsu.edu/pub/epel/6/i386/epel-release-6-8.noarch.rpm
 _CONTROLLER_NAME=""
+_EXTRA_PKGS="cpio net-snmp-utils"
 
 echo -e \\033ct clear
 tput clear
@@ -76,7 +77,7 @@ xcat_reset(){
 
   # 'light' re-install: will not remove the packages, just install over existing ones
 
-  echo -e "\nCleaning up and re-installing\n"
+  echo -e "\nCleaning up and re-installing:\n"
 
   rm -rf /install
   rm -rf /root/.xcat
@@ -93,13 +94,13 @@ xcat_reset(){
     rpm -e --justdb --nodeps $pkg &> /dev/null
   done
 
-  echo -e "\nInstalling necessary packages and creating new configuration files:\n"
-  yum install -y $(repoquery --requires --recursive --resolve -i xCAT | grep "Name        :" | awk '{print $3}') &> /dev/null
+  echo -e "\nInstalling necessary packages and creating new configuration files... (might take a while)\c"
+  yum install -y $(repoquery --requires --recursive --resolve -i xCAT | grep "Name        :" | awk '{print $3}') $_EXTRA_PKGS &> /dev/null
   echo -e "\nDone!\n"
 
 }
 
-xcat_prepare(){
+system_xcat_config(){
 
   #Network configuration
 
@@ -149,10 +150,10 @@ xcat_prepare(){
 
 }
 
-xcat_prepare
+system_xcat_config
 
 if [ "$1" == "clean" ]; then
-  requirement_setup
+  install_requirements
   xcat_cleanup
   xcat_repo_add
   xcat_reset
@@ -165,8 +166,10 @@ else
   else
     echo -e "Installing xCAT"
     xcat_repo_add
-    yum install -y $(repoquery --requires --recursive --resolve -i xCAT | grep "Name        :" | awk '{print $3}') # &> /dev/null
+    yum install -y $(repoquery --requires --recursive --resolve -i xCAT | grep "Name        :" | awk '{print $3}') $_EXTRA_PKGS &> /dev/null
   fi
 fi
 
 . /etc/profile.d/xcat.sh
+echo -e "\nRestoring xCat tables: $(/opt/xcat/sbin/restorexCATdb -p /srv/salt/base/controller/files/tables)"
+

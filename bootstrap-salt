@@ -1,21 +1,5 @@
 #!/bin/bash
 
-if [ -f /etc/redhat-release ]; then
-  release="redhat"
-fi
-
-_PKI_DIR=/etc/salt/pki
-_SALT_ROOTFILES=/srv
-_CURRENT_DIR=$(pwd)
-_EPEL_RELEASE=http://ftp.linux.ncsu.edu/pub/epel/6/i386/epel-release-6-8.noarch.rpm
-_CONTROLLER_NAME=""
-
-echo -e "\n                   /\\___/\\"
-echo -e "                   \\ -.- /"
-echo -e "                   \`-.^.-'          **xCAT** "   
-echo -e "                     /\"\  \n"
-echo -e "“Cats are intended to teach us that not everything in nature has a purpose.” \n"
-
 clean(){
 
   rm -rf /etc/yum.repos.d/xCAT-*

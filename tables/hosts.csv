@@ -1,0 +1,2 @@
+#node,ip,hostnames,otherinterfaces,comments,disable
+"compute","|\D+(\d+)$|10.141.((($1-1)/256)).(($1-1)%256+1)|","|\D+(\d+)$|node($1)|","|\D+(\d+)$|node($1)-bmc:10.148.((($1-1)/256)).(($1-1)%256+1)|",,
