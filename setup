@@ -8,6 +8,8 @@ _CONTROLLER_NAME=""
 _EXTRA_PKGS="cpio net-snmp-utils"
 _XCAT_INSTALLED=false
 
+. ./tools/bash_lib
+
 echo -e \\033ct clear
 tput clear
 
@@ -68,7 +70,7 @@ xcat_cleanup(){
   rm -rf /opt/xcat/
   rm -rf /etc/xcat
 
-  echo -e "Forcing removal of all xCAT packages from the packages database:\n"
+  echo -e "\nForcing removal of all xCAT packages from the packages database:\n"
   for pkg in $(repoquery --resolve --repoid=xcat-dep-local --repoid=xcat-2-core-local --require -i $(repoquery --requires --recursive --resolve xCAT) | grep "Name        :" | awk '{print $3}' | sort -u); do
    echo -e "\e[33m[ Cleaning ]\e[0m $(seq -s. $(expr 60 - ${#pkg})|tr -d '[:digit:]') $pkg"
    rpm -e --justdb --nodeps $pkg &> /dev/null
@@ -79,14 +81,13 @@ xcat_cleanup(){
 xcat_install(){
 
   # install: will not remove the packages, just install over existing ones
-
-  echo -e "\nInstalling necessary packages and creating new configuration files... (might take a while)\n"
+  echo -e "\nInstalling necessary packages and creating new configuration files:\n"
 
   for pkg in $(repoquery --resolve --repoid=xcat-dep-local --repoid=xcat-2-core-local --require -i $(repoquery --requires --recursive --resolve xCAT) | grep "Name        :" | awk '{print $3}' | sort -u); do
    echo -e "\e[32m[ Installing ]\e[0m $(seq -s. $(expr 59 - ${#pkg})|tr -d '[:digit:]') $pkg"
    yum install -y $pkg &>/dev/null
   done
-
+  stop_spinner "done:"
   echo -e "\nDone!\n"
 
 }
@@ -142,19 +143,23 @@ xcat_system_config(){
 }
 
 xcat_post_install(){
-
+  echo -e "\nxCAT post install steps\n"
   . /etc/profile.d/xcat.sh
-  echo -e "\nRestoring xCat tables: $(/opt/xcat/sbin/restorexCATdb -p ./tables && service xcatd restart &> /dev/null)"
-  /opt/xcat/sbin/chtab netname=10_141_0_0-255_255_0_0 networks.dynamicrange=10.141.230.1-10.141.239.254
+  echo -e "Restoring xCat tables: $(/opt/xcat/sbin/restorexCATdb -p ./tables && service xcatd restart &> /dev/null)"
+
   /opt/xcat/sbin/nodeadd node001-node004 groups=compute
   /opt/xcat/sbin/makehosts
   /opt/xcat/sbin/makedhcp -n
   /opt/xcat/sbin/makedhcp -a
   /opt/xcat/sbin/makedns -n
 
-  service dhcpd restart &&  service named restart &> /dev/null
+  service dhcpd restart &>/dev/null && service named restart &> /dev/null
   rm -rf /tmp/CentOS-6.5-x86_64-minimal.iso
-  wget --directory-prefix=/tmp http://mirror.oxilion.nl/centos/6.5/isos/x86_64/CentOS-6.5-x86_64-minimal.iso
+
+  echo -e "\nDownloading minimal CentOS image"
+  wget --directory-prefix=/tmp -q http://mirror.oxilion.nl/centos/6.5/isos/x86_64/CentOS-6.5-x86_64-minimal.iso & 
+  spinner $!
+
   copycds -n centos6.5 /tmp/CentOS-6.5-x86_64-minimal.iso
   yumdownloader --destdir /install/centos6.5/x86_64/Packages bc wget parted
   createrepo /install/centos6.5/x86_64/
@@ -174,16 +179,16 @@ xcat_pre_install(){
 
 }
 
+stty -echo
 install_requirements
 xcat_system_config
 xcat_repo_add
 xcat_pre_install
-
 
 if [ "$_XCAT_INSTALLED" = true ]; then
   xcat_cleanup
 fi
 
 xcat_install
-
 xcat_post_install
+stty echo
