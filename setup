@@ -144,7 +144,7 @@ xcat_system_config(){
 xcat_post_install(){
 
   . /etc/profile.d/xcat.sh
-  echo -e "\nRestoring xCat tables: $(/opt/xcat/sbin/restorexCATdb -p ./tables && service xcatd restart)"
+  echo -e "\nRestoring xCat tables: $(/opt/xcat/sbin/restorexCATdb -p ./tables && service xcatd restart &> /dev/null)"
   /opt/xcat/sbin/chtab netname=10_141_0_0-255_255_0_0 networks.dynamicrange=10.141.230.1-10.141.239.254
   /opt/xcat/sbin/nodeadd node001-node004 groups=compute
   /opt/xcat/sbin/makehosts
@@ -153,12 +153,15 @@ xcat_post_install(){
   /opt/xcat/sbin/makedns -n
 
   service dhcpd restart &&  service named restart &> /dev/null
-
-  wget --directory-prefix=/tmp/CentOS-6.5-x86_64-minimal.iso http://mirror.oxilion.nl/centos/6.5/isos/x86_64/CentOS-6.5-x86_64-minimal.iso
+  rm -rf /tmp/CentOS-6.5-x86_64-minimal.iso
+  wget --directory-prefix=/tmp http://mirror.oxilion.nl/centos/6.5/isos/x86_64/CentOS-6.5-x86_64-minimal.iso
   copycds -n centos6.5 /tmp/CentOS-6.5-x86_64-minimal.iso
   yumdownloader --destdir /install/centos6.5/x86_64/Packages bc wget parted
   createrepo /install/centos6.5/x86_64/
   genimage -o centos6.5 -a x86_64 -p compute -i eth0
+
+  packimage -o centos6.5 -a x86_64 -p compute
+  nodeset compute osimage=centos6.5-x86_64-netboot-compute
 
 }
 
