@@ -57,8 +57,8 @@ xcat_repo_add(){
 
 xcat_cleanup(){
   
-  # forced 'hard' re-install, will remove xCAT packages
-  echo -e "Removing all xCAT config\n"
+  # will remove xCAT packages from database and existing config
+  echo -e "Removing xCAT\n"
 
   rm -rf /install
   rm -rf /root/.xcat
@@ -72,24 +72,22 @@ xcat_cleanup(){
   echo -e "Forcing removal of all xCAT packages from the packages database:\n"
   for pkg in $(repoquery --resolve --repoid=xcat-dep-local --repoid=xcat-2-core-local --require -i $(repoquery --requires --recursive --resolve xCAT) | grep "Name        :" | awk '{print $3}' | sort -u); do
    echo -e "\e[33m[ Cleaning ]\e[0m $(seq -s. $(expr 60 - ${#pkg})|tr -d '[:digit:]') $pkg"
-   rpm -e --justdb --nodeps $pkg
+   rpm -e --justdb --nodeps $pkg &> /dev/null
   done
-
 
 }
 
 xcat_install(){
 
-  # 'light' re-install: will not remove the packages, just install over existing ones
+  # install: will not remove the packages, just install over existing ones
 
   echo -e "\nInstalling necessary packages and creating new configuration files... (might take a while)\n"
 
   for pkg in $(repoquery --resolve --repoid=xcat-dep-local --repoid=xcat-2-core-local --require -i $(repoquery --requires --recursive --resolve xCAT) | grep "Name        :" | awk '{print $3}' | sort -u); do
    echo -e "\e[31m[ Installing ]\e[0m $(seq -s. $(expr 60 - ${#pkg})|tr -d '[:digit:]') $pkg"
-   yum install -y $pkg
+   yum install -y $pkg &>/dev/null
   done
 
-#  yum install -y $(repoquery --resolve --repoid=xcat-dep-local --repoid=xcat-2-core-local --require $(repoquery --requires --recursive --resolve -i xCAT | grep "Name        :" | awk '{print $3}') | sort -u) 
   echo -e "\nDone!\n"
 
 }
@@ -163,7 +161,7 @@ service named restart
 xcat_pre_install(){
 
   if [ -n "$(rpm -qa | grep xCAT)" ]; then
-    echo -e "Found previous xCAT installation..."
+    echo -e "Found previous xCAT installation... "
     _XCAT_INSTALLED=true
   fi  
 
