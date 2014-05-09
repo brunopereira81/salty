@@ -14,3 +14,7 @@ spinner()
     done
     printf "    \b\b\b\b"
 }
+
+move_and_echo() {
+  echo -ne "\E[${1};${2}H""$3" 
+}
