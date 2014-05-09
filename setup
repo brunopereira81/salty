@@ -6,6 +6,7 @@ _CURRENT_DIR=$(pwd)
 _EPEL_RELEASE=http://ftp.linux.ncsu.edu/pub/epel/6/i386/epel-release-6-8.noarch.rpm
 _CONTROLLER_NAME=""
 _EXTRA_PKGS="cpio net-snmp-utils"
+_XCAT_INSTALLED=false
 
 echo -e \\033ct clear
 tput clear
@@ -57,27 +58,7 @@ xcat_repo_add(){
 xcat_cleanup(){
   
   # forced 'hard' re-install, will remove xCAT packages
-
-  echo -e "Complete removal and re-install\n"
-
-  echo -e "Forcing removal of all xCAT packages:\n"
-  for pkg in $(repoquery --repoid=xcat-2-core-local -qa); do
-   echo -e "\e[31m[ Removing ]\e[0m $(seq -s. $(expr 60 - ${#pkg})|tr -d '[:digit:]') $pkg"
-   yum remove -y $pkg &> /dev/null
-  done
-
-  for pkg in $(repoquery --repoid=xcat-dep-local -qa); do
-   echo -e "\e[31m[ Removing ]\e[0m $(seq -s. $(expr 60 - ${#pkg})|tr -d '[:digit:]') $pkg"
-   yum remove -y $pkg &> /dev/null
-  done
-
-}
-
-xcat_reset(){
-
-  # 'light' re-install: will not remove the packages, just install over existing ones
-
-  echo -e "\nCleaning up and re-installing:\n"
+  echo -e "Removing all xCAT config\n"
 
   rm -rf /install
   rm -rf /root/.xcat
@@ -88,19 +69,26 @@ xcat_reset(){
   rm -rf /opt/xcat/
   rm -rf /etc/xcat
 
-  for pkg in $(repoquery --requires --recursive --resolve -i xCAT | grep "Name        :" | awk '{print $3}'); do
-    name=$(repoquery -qa $pkg)
-    echo -e "\e[33m[ Cleaning ]\e[0m $(seq -s. $(expr 60 - ${#name})|tr -d '[:digit:]') $name"
-    rpm -e --justdb --nodeps $pkg &> /dev/null
+  echo -e "Forcing removal of all xCAT packages from the YUM database:\n"
+  for pkg in $(repoquery --requires --recursive --resolve --installed -i xCAT | grep "Name        :" | awk '{print $3}'); do
+   echo -e "\e[31m[ Removing ]\e[0m $(seq -s. $(expr 60 - ${#pkg})|tr -d '[:digit:]') $pkg"
+   rpm -e --justdb --nodeps $pkg
   done
 
+
+}
+
+xcat_install(){
+
+  # 'light' re-install: will not remove the packages, just install over existing ones
+
   echo -e "\nInstalling necessary packages and creating new configuration files... (might take a while)\c"
-  yum install -y $(repoquery --requires --recursive --resolve -i xCAT | grep "Name        :" | awk '{print $3}') $_EXTRA_PKGS &> /dev/null
+  yum install -y $(repoquery --requires --resolve --recursive xCAT) $_EXTRA_PKGS #> /dev/null
   echo -e "\nDone!\n"
 
 }
 
-system_xcat_config(){
+xcat_system_config(){
 
   #Network configuration
 
@@ -166,22 +154,26 @@ service named restart
 
 }
 
-system_xcat_config
+xcat_pre_install(){
 
-if [ "$1" == "clean" ]; then
-  install_requirements
-  xcat_cleanup
-  xcat_repo_add
-  xcat_reset
-else
-  install_requirements
-  xcat_repo_add
   if [ -n "$(rpm -qa | grep xCAT)" ]; then
     echo -e "Found previous xCAT installation..."
-    xcat_reset
-  else
-    echo -e "Installing xCAT"
-    xcat_repo_add
-    yum install -y $(repoquery --requires --recursive --resolve -i xCAT | grep "Name        :" | awk '{print $3}') $_EXTRA_PKGS &> /dev/null
-  fi
+    _XCAT_INSTALLED=true
+  fi  
+
+}
+
+install_requirements
+xcat_pre_install
+
+
+if [ "$_XCAT_INSTALLED" = true ]; then
+  xcat_cleanup
 fi
+
+xcat_install
+
+xcat_system_config
+
+
+
