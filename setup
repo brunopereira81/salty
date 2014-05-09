@@ -19,8 +19,7 @@ echo -e "“Cats are intended to teach us that not everything in nature has a pu
 
 install_requirements(){
 
-  yum install -y yum-utils
-  yum install -y createrepo
+  yum install -y yum-utils createrepo wget
 
 } &> /dev/null
 
@@ -84,7 +83,7 @@ xcat_install(){
   echo -e "\nInstalling necessary packages and creating new configuration files... (might take a while)\n"
 
   for pkg in $(repoquery --resolve --repoid=xcat-dep-local --repoid=xcat-2-core-local --require -i $(repoquery --requires --recursive --resolve xCAT) | grep "Name        :" | awk '{print $3}' | sort -u); do
-   echo -e "\e[32m[ Installing ]\e[0m $(seq -s. $(expr 60 - ${#pkg})|tr -d '[:digit:]') $pkg"
+   echo -e "\e[32m[ Installing ]\e[0m $(seq -s. $(expr 59 - ${#pkg})|tr -d '[:digit:]') $pkg"
    yum install -y $pkg &>/dev/null
   done
 
@@ -142,35 +141,39 @@ xcat_system_config(){
 
 }
 
-post_xcat_install(){
+xcat_post_install(){
 
-. /etc/profile.d/xcat.sh
-echo -e "\nRestoring xCat tables: $(/opt/xcat/sbin/restorexCATdb -p ./tables)"
-/opt/xcat/sbin/chtab netname=10_141_0_0-255_255_0_0 networks.dynamicrange=10.141.230.1-10.141.239.254
-/opt/xcat/sbin/nodeadd node001-node004 groups=compute
-/opt/xcat/sbin/makehosts
-/opt/xcat/sbin/makedhcp -n
-/opt/xcat/sbin/makedhcp -a
-/opt/xcat/sbin/makedns -n
+  . /etc/profile.d/xcat.sh
+  echo -e "\nRestoring xCat tables: $(/opt/xcat/sbin/restorexCATdb -p ./tables && service xcatd restart)"
+  /opt/xcat/sbin/chtab netname=10_141_0_0-255_255_0_0 networks.dynamicrange=10.141.230.1-10.141.239.254
+  /opt/xcat/sbin/nodeadd node001-node004 groups=compute
+  /opt/xcat/sbin/makehosts
+  /opt/xcat/sbin/makedhcp -n
+  /opt/xcat/sbin/makedhcp -a
+  /opt/xcat/sbin/makedns -n
 
-service dhcpd restart
-service named restart
+  service dhcpd restart &&  service named restart &> /dev/null
+
+  wget --directory-prefix=/tmp/CentOS-6.5-x86_64-minimal.iso http://mirror.oxilion.nl/centos/6.5/isos/x86_64/CentOS-6.5-x86_64-minimal.iso
+  copycds -n centos6.5 /tmp/CentOS-6.5-x86_64-minimal.iso
+  yumdownloader --destdir /install/centos6.5/x86_64/Packages bc wget parted
+  createrepo /install/centos6.5/x86_64/
+  genimage -o centos6.5 -a x86_64 -p compute -i eth0
 
 }
 
 xcat_pre_install(){
 
   if [ -n "$(rpm -qa | grep xCAT)" ]; then
-    echo -e "Found previous xCAT installation... "
+    echo -e "Found previous xCAT installation... \c"
     _XCAT_INSTALLED=true
   fi  
 
 }
 
 install_requirements
-
+xcat_system_config
 xcat_repo_add
-
 xcat_pre_install
 
 
@@ -180,4 +183,4 @@ fi
 
 xcat_install
 
-xcat_system_config
+xcat_post_install
