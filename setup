@@ -84,10 +84,9 @@ xcat_install(){
   echo -e "\nInstalling necessary packages and creating new configuration files:\n"
 
   for pkg in $(repoquery --resolve --repoid=xcat-dep-local --repoid=xcat-2-core-local --require -i $(repoquery --requires --recursive --resolve xCAT) | grep "Name        :" | awk '{print $3}' | sort -u); do
-   echo -e "\e[32m[ Installing ]\e[0m $(seq -s. $(expr 59 - ${#pkg})|tr -d '[:digit:]') $pkg"
-   yum install -y $pkg &>/dev/null
+    echo -e "\e[32m[ Installing ]\e[0m $(seq -s. $(expr 58 - ${#pkg})|tr -d '[:digit:]') $pkg"
+    yum install -y $pkg &>/dev/null
   done
-  stop_spinner "done:"
   echo -e "\nDone!\n"
 
 }
