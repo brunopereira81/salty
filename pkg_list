@@ -249,3 +249,5 @@ zlib
 rsync
 irqbalance
 ntp
+ntpdate
+numactl
