@@ -137,25 +137,61 @@ xcat_system_config(){
 }
 
 xcat_post_install(){
+
   echo -e "\nxCAT post install steps:\n"
   . /etc/profile.d/xcat.sh
   echo -e "Restoring xCat tables: $(/opt/xcat/sbin/restorexCATdb -p ./tables)"
   service xcatd restart &> /dev/null
 
-  (/opt/xcat/sbin/nodeadd node001-node004 groups=compute
+  /opt/xcat/sbin/nodeadd node001-node004 groups=compute
   /opt/xcat/sbin/makehosts
   /opt/xcat/sbin/makedhcp -n
   /opt/xcat/sbin/makedhcp -a
-  /opt/xcat/sbin/makedns -n) &
+  /opt/xcat/sbin/makedns -n
+  
+  mkdir -p /install/custom
+
+	cat <<- EOF > /install/custom/compute.centos6.5.pkglist
+	bash
+	nfs-utils
+	openssl
+	dhclient
+	kernel
+	openssh-server
+	openssh-clients
+	wget
+	rsync
+	dracut-network
+	irqbalance
+	procps
+	rpm
+	e2fsprogs
+	parted
+	bc
+	ntp
+	rsyslog
+	EOF
+
+	cat <<- EOF > /install/custom/compute.centos6.5.exlist
+	./usr/share/man/*
+	./usr/share/locale/*
+	./usr/share/i18n*
+	./var/cache/yum*
+	./usr/share/doc*
+	./usr/share/gnome*
+	./usr/share/zoneinfo*
+	./usr/share/cracklib*
+	./usr/share/info*
+	./usr/share/omf*
+	./usr/lib/locale*
+	./usr/lib/perl5*
+	./boot*
+	EOF
 
   service dhcpd restart &>/dev/null && service named restart &> /dev/null
-  rm -rf /tmp/CentOS-6.5-x86_64-minimal.iso
 
-  echo -e "\nDownloading minimal CentOS image"
-  wget --directory-prefix=/tmp -q http://mirror.oxilion.nl/centos/6.5/isos/x86_64/CentOS-6.5-x86_64-minimal.iso 
+  yumdownloader --destdir /install/centos6.5/x86_64/Packages $(cat ./pkg_list) bc wget parted &> /dev/null
 
-  copycds -n centos6.5 /tmp/CentOS-6.5-x86_64-minimal.iso
-  yumdownloader --destdir /install/centos6.5/x86_64/Packages bc wget parted &> /dev/null
   createrepo /install/centos6.5/x86_64/
   genimage -o centos6.5 -a x86_64 -p compute -i eth0
 
