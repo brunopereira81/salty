@@ -60,7 +60,7 @@ xcat_repo_add(){
 	gpgkey=https://sourceforge.net/projects/xcat/files/yum/xcat-dep/rh6/x86_64/repodata/repomd.xml.key
 	EOF
 
-} #&> /dev/null
+} &> /dev/null
 
 xcat_cleanup(){
   
@@ -155,9 +155,9 @@ xcat_post_install(){
   /opt/xcat/sbin/makedhcp -a
   /opt/xcat/sbin/makedns -n
   
-  mkdir -p /install/custom
+  mkdir -p /install/custom/netboot/centos
 
-	cat <<- EOF > /install/custom/compute.centos6.5.pkglist
+	cat <<- EOF > /install/custom/netboot/centos/compute.centos6.5.pkglist
 	bash
 	nfs-utils
 	openssl
@@ -176,9 +176,10 @@ xcat_post_install(){
 	bc
 	ntp
 	rsyslog
+	firefox
 	EOF
 
-	cat <<- EOF > /install/custom/compute.centos6.5.exlist
+	cat <<- EOF > /install/custom/netboot/centos/compute.centos6.5.exlist
 	./usr/share/man/*
 	./usr/share/locale/*
 	./usr/share/i18n*
@@ -236,6 +237,7 @@ if [ "$_XCAT_INSTALLED" = true ]; then
 fi
 
 xcat_install
+
 xcat_post_install
 
 stty echo
