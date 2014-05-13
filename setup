@@ -24,7 +24,7 @@ update_header(){
 install_requirements(){
 
   rpm -ivh $_EPEL_RELEASE &> /dev/null
-  yum install -y yum-utils $_EXTRA_PKGS #&> /dev/null
+  yum install -y yum-utils $_EXTRA_PKGS &> /dev/null
 
 }
 
@@ -193,7 +193,7 @@ xcat_post_install(){
 
   service dhcpd restart &>/dev/null && service named restart &> /dev/null
 
-  yumdownloader --destdir /install/centos6.5/x86_64/Packages $(cat ./pkg_list) bc wget parted &> /dev/null
+  yumdownloader --destdir /install/centos6.5/x86_64/Packages $(cat ./pkg_list) &> /dev/null
 
   createrepo /install/centos6.5/x86_64/
   genimage -o centos6.5 -a x86_64 -p compute -i eth0
@@ -224,11 +224,11 @@ install_requirements
 xcat_repo_add
 xcat_system_config
 
-xcat_pre_install
-if [ "$_XCAT_INSTALLED" = true ]; then
-  xcat_cleanup
-fi
-xcat_install
+#xcat_pre_install
+#if [ "$_XCAT_INSTALLED" = true ]; then
+#  xcat_cleanup
+#fi
+#xcat_install
 xcat_post_install
 
 stty echo

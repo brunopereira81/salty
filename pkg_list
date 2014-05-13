@@ -246,3 +246,6 @@ yum-metadata-parser
 yum-plugin-fastestmirror
 zd1211-firmware
 zlib
+rsync
+irqbalance
+ntp
