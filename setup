@@ -5,7 +5,7 @@ _SALT_ROOTFILES=/srv
 _CURRENT_DIR=$(pwd)
 _EPEL_RELEASE=http://ftp.linux.ncsu.edu/pub/epel/6/i386/epel-release-6-8.noarch.rpm
 _CONTROLLER_NAME=""
-_EXTRA_PKGS="net-snmp-utils wget yum-utils createrepo"
+_EXTRA_PKGS="net-snmp-utils wget yum-utils createrepo python-pyasn1 pysnmp"
 _XCAT_INSTALLED=false
 _DONE_TASKS=""
 
@@ -23,7 +23,8 @@ update_header(){
 
 install_requirements(){
 
-  yum install -y yum-utils $_EXTRA_PKGS &> /dev/null
+  rpm -ivh $_EPEL_RELEASE &> /dev/null
+  yum install -y yum-utils $_EXTRA_PKGS #&> /dev/null
 
 }
 
@@ -142,6 +143,8 @@ xcat_post_install(){
   . /etc/profile.d/xcat.sh
   echo -e "Restoring xCat tables: $(/opt/xcat/sbin/restorexCATdb -p ./tables)"
   service xcatd restart &> /dev/null
+
+  chtab 
 
   /opt/xcat/sbin/nodeadd node001-node004 groups=compute
   /opt/xcat/sbin/makehosts
